@@ -30,7 +30,7 @@ int32_t main()
         ll one = s[i-1] - '0';
         ll two = stoi(s.substr(i-2,2)); //changes last 2 chars from string to a integer
         if(one >= 1 && one <= 9) dp[i] += dp[i-1]; //checks whether the last character is valid or not
-        if(two >= 10 && two <= 26) dp[i] += dp[i-2]; //checks whether last 2 characters are valid or not
+        if(two >= 10 && two <= 26) dp[i] += dp[i-2]; //checks whether last two characters are valid or not
     }
     cout << dp[n] << '\n';
     return 0;
