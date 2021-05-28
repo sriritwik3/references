@@ -7,7 +7,7 @@ using namespace std;
 
 // One approach is to use an unordered set and push a[i] into the set each time we traverse the array. And check whether k - a[i] is already 
 //present in the array. If it was, just simply return true.
-// Time Complexity - O(n) 
+// Time Complexity - O(n) and one pass solution
 int solve_set(int a[],int n,int k){
     unordered_set<int> s;
     for(ll i=1;i<=n;i++){
