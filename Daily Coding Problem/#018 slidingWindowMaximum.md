@@ -55,3 +55,40 @@ int32_t main()
     return 0;
 }    
 ```
+#### Complexities - Time - O(N), Space - O(K)
+
+**There is another dynamic programming approach to solve this problem but it takes O(N) time and O(N) space**
+
+### Explanation
+
+Firstly, we divide the array into blocks of k. We use 2 dp arrays namely left and right. Where left[i] denotes the maximum of all the elemenths which are left to a[i] only in the block in which a[i] is present. Similarly right[i] conains the maximum of all elemnents to the right of a[i] in that particular block.
+Finally, when calculating the maximum element in a sub array(window), we print the maximum right[starting index in the window] and left[ending index in the window].
+**DO YOU WONDER HOW THIS IS POSSIBLE" - Take out your pen and paper and give it a try. It's easy.**
+
+### Code
+
+```cpp
+#include<bits/stdc++.h>
+using namespace std;
+typedef long long ll;
+#define fastio ios_base::sync_with_stdio(false),cin.tie(NULL),cout.tie(NULL)
+
+int32_t main()
+{
+    fastio;
+    ll n,k;
+    cin >> n >> k;
+    ll a[n+1],left[n+1],right[n+2];
+    right[n+1] = -INT_MAX;
+    for(ll i=1;i<=n;i++) cin >> a[i];
+    for(ll i=1;i<=n;i++){
+        if((i-1)%k == 0) left[i] = a[i];
+        else left[i] = max(left[i-1],a[i]);
+        
+        if((n+1-i)%k == 0) right[n+1-i] = a[n+1-i];
+        else right[n+1-i] = max(right[n+2-i],a[n+1-i]);
+    }
+    for(ll i=1,j=k;j<=n;i++,j++) cout << max(right[i],left[j]) << ' ';
+    return 0;
+}    
+```
