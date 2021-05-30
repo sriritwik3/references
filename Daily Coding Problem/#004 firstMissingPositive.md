@@ -25,7 +25,7 @@ Next time we traverse the array we can find the first number which is not in it'
 ```cpp
 ll firstMisssingPos(ll a[],ll n){
     for(ll i=1;i<=n;i++)
-        if(a[i] >= 1 && a[i] <= n && a[a[i]] != a[i]) swap(a[i],a[a[i]]);
+        while(a[i] >= 1 && a[i] <= n && a[a[i] != a[i]) swap(a[i],a[a[i]);
     for(ll i=1;i<=n;i++){
         if(a[i] != i){
             return i;
