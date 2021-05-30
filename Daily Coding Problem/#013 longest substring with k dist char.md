@@ -1,22 +1,22 @@
 # Longest Substring with K distinct characters
 
 ## Problem Statement
-Given an integer k and a string s, find the length of the longest substring that contains at most k distinct characters.
-For example, given s = "abcba" and k = 2, the longest substring with k distinct characters is "bcb".
+Given an integer k and a string s, find the length of the longest substring that contains at most k distinct characters.  
+For example, given s = "abcba" and k = 2, the longest substring with k distinct characters is "bcb".  
 
 ## Solution
 
 ### Intuition
 
 We maintain a window which can contain atmost k distinct charaters. Each time it exceeds k, we remove elements from the left and update their 
-frequency from the map and decrease the length of window.
-Each time we encounter a distinct character which is not present in the map increment window
-When window gets greater than k, remove the characters from left of the sliding window(based on our left index l) untill window <= k
-Don't get confused betwen window and sliding window. Out of convention in my code, window means the no.of distinct characters present in our sliding window
-and Sliding window is an imaginary window which holds the current substing from index l to i
-l is the starting index of sliding window
-i is the current end of sliding window
-Thus each time we store maximum size of sliding window by i-l+1
+frequency from the map and decrease the length of window.  
+Each time we encounter a distinct character which is not present in the map increment window.  
+When window gets greater than k, remove the characters from left of the sliding window(based on our left index l) untill window <= k  
+Don't get confused betwen window and sliding window. Out of convention in my code, window means the no.of distinct characters present in our sliding window  
+and Sliding window is an imaginary window which holds the current substing from index l to i  
+l is the starting index of sliding window  
+i is the current end of sliding window  
+Thus each time we store maximum size of sliding window by i-l+1  
 
 ### Code
 
