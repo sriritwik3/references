@@ -13,9 +13,9 @@ For example, given [(30, 75), (0, 50), (60, 150)], you should return 2.
 ### Intuition
 
 Sort both arrays i.e start and end. Just like how you do in merge sort try to merge both arrival and departure times here by maintaining the number of classes happening at 
-a certain point of time. I mean at time x, if a1 classes already started and a2 classes were ended, no.of classes happening at that time would be a1-a2. When merging both the times
-make a count of no.of starts and no.of ends and at each iteration keep the maximum of no.of starts-no.of ends. 
-Maximum classes happening at any particular time is the minimum number of rooms required
+a certain point of time. I mean at time x, if a1 classes already started and a2 classes were ended, no.of classes happening at that time would be a1-a2. When merging both the times.  
+make a count of no.of starts and no.of ends and at each iteration keep the maximum of no.of starts-no.of ends.  
+Maximum classes happening at any particular time is the minimum number of rooms required.  
 
 **Time complexity would be O(nlogn) as we are using sorting**
 
