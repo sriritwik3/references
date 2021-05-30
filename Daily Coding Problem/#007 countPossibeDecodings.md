@@ -2,20 +2,20 @@
 
 ## Problem Statement
 
-Given the mapping a = 1, b = 2, ... z = 26, and an encoded message, count the number of ways it can be decoded.
-For example, the message '111' would give 3, since it could be decoded as 'aaa', 'ka', and 'ak'
+Given the mapping a = 1, b = 2, ... z = 26, and an encoded message, count the number of ways it can be decoded.  
+For example, the message '111' would give 3, since it could be decoded as 'aaa', 'ka', and 'ak'.  
 You can assume that the messages are decodable. For example, '001' is not allowed.
 
 ## Solution
 
 ### Intuition
 
-We should get an initial thought that we should solve this question using dp just by seeing the question.
-dp[i] be the no.of ways we can decode the string upto i'th position.
-dp[i] = no.of ways we count the decoding upto (i-1)'th position + (i-2)'th position if both are valid
-dp[i] = dp[i-1](if the character at i'th position is not 0) + dp[i-2](if the characters at i-1'th and i'th positions are valid i.e lies in [10,26])
-for eg let's take '325'
-If we want to calculate dp[3] it will be equal to dp[1](no. of ways we decode for '3' as here we can take '25' as y) + dp[2](no. of ways we decode '32' as here we can take '5' as e)
+We should get an initial thought that we should solve this question using dp just by seeing the question.  
+dp[i] be the no.of ways we can decode the string upto i'th position.  
+dp[i] = no.of ways we count the decoding upto (i-1)'th position + (i-2)'th position if both are valid.  
+dp[i] = dp[i-1](if the character at i'th position is not 0) + dp[i-2](if the characters at i-1'th and i'th positions are valid i.e lies in [10,26]).  
+for eg let's take '325'  
+If we want to calculate dp[3] it will be equal to dp[1](no. of ways we decode for '3' as here we can take '25' as y) + dp[2](no. of ways we decode '32' as here we can take '5' as e)  
 Thus each value depends on it's previous values and we write our basecases for 0 and 1.
 
 ### Code
