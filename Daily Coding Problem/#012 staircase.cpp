@@ -29,8 +29,7 @@ int32_t main()
     unordered_set<ll> s;
     memset(dp,0,sizeof(dp));
     for(ll i=1;i<=m;i++) cin >> a, s.insert(a), dp[a] = 1;
-    dp[0] = 1, dp[1] = 1;
-    for(ll i=2;i<=n;i++){
+    for(ll i=1;i<=n;i++){
         for(auto it = s.begin();it!= s.end();it++){
             if(*it < i)
             dp[i] += dp[i-*it];
