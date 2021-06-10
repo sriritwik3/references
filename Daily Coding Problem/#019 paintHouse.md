@@ -84,7 +84,7 @@ int32_t main()
         min1 = INT_MAX, min2 = INT_MAX;
         
         for(ll j=1;j<=k;j++){
-            if(dp[j] < min1) min1 = dp[j],ind1 = j,min2 = min1,ind2 = ind1;
+            if(dp[j] < min1) min2 = min1,ind2 = ind1,min1 = dp[j],ind1 = j;
             else if(dp[j] < min2 && j!=ind1) min2 = dp[j],ind2 = j;
         }
     }
