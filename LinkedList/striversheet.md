@@ -1,11 +1,7 @@
 # LinkedList
 ## Striver SDE sheet 
 **[Link](https://takeuforward.org/interviews/strivers-sde-sheet-top-coding-interview-problems/)**  
-
-# 1) Reverse a Linked List  
-Given the head of a singly linked list, write a program to reverse the linked list, and return the head pointer to the reversed list.  
-
-Definition of linked list  
+### Definition of linked list  
 ```cpp
 struct ListNode {
      int val;
@@ -15,6 +11,10 @@ struct ListNode {
       ListNode(int x, ListNode *next) : val(x), next(next) {}
     };
 ```
+
+
+# 1) Reverse a Linked List  
+Given the head of a singly linked list, write a program to reverse the linked list, and return the head pointer to the reversed list.  
 
 ### Approach - 1  
 Take 3 pointers, one pointing to the current node. one to track previous nodes so that we can interchange links between them. one to keep track of nodes infront of current node.  
@@ -281,8 +281,32 @@ public:
 ```
 It takes stack space but we have to do in constant space so we have to go for iterative.  
 ### Iterative Approach  
-```cpp
+![image](https://user-images.githubusercontent.com/56584349/178721476-0d038055-18ba-4d9d-b160-0ab5647b6663.png)  
+![image](https://user-images.githubusercontent.com/56584349/178721446-a35359ac-8de3-475c-938b-cef42dd26310.png)  
 
+```cpp
+class Solution {
+public:
+    ListNode* reverseKGroup(ListNode* head, int k) {
+        ListNode *dummy = new ListNode(0);
+        ListNode *cur = head;
+        dummy->next = head;
+        int length = 0;
+        while(cur) length++, cur = cur->next;
+        ListNode *pre = dummy, *tail = head;
+        for(int i = 0;i<length/k;i++){
+            for(int j=1;j<k;j++){
+                ListNode *temp = tail->next->next;
+                tail->next->next = pre->next;
+                pre->next = tail->next;
+                tail->next = temp;
+            }
+            pre = tail;
+            tail = tail->next;
+        }
+        return dummy->next;
+    }
+};
 ```
 TC - O(N), SC - O(1)  
 
