@@ -279,7 +279,53 @@ vector<int> rabin_karp(string const& s, string const& t) {
 ```
 
 # 9) Kmp   
-
+![image](https://user-images.githubusercontent.com/56584349/179253714-a0740758-5f65-43e9-890f-1a782e5cfd26.png)  
+![image](https://user-images.githubusercontent.com/56584349/179253870-9ae6500c-a5c6-45ad-9f39-607f9a3e610d.png)  
+```cpp
+vector<int> prefix_function(string s) {
+    int n = (int)s.length();
+    vector<int> pi(n);
+    for (int i = 1; i < n; i++) {
+        int j = pi[i-1];
+        while (j > 0 && s[i] != s[j])
+            j = pi[j-1];
+        if (s[i] == s[j])
+            j++;
+        pi[i] = j;
+    }
+    return pi;
+}
+```
+![image](https://user-images.githubusercontent.com/56584349/179254508-704f8c1a-4394-486d-b53d-4c21f8603d19.png)  
+**KMP for string search code.**  
+```cpp
+void KMPStringSearch(char* pat, char* str) {
+    int M = strlen(pat);
+    int N = strlen(str);
+  
+    int lps[M];
+    computeLPSArray(pat, M, lps);
+  
+    int i = 0; 
+    int j = 0;
+    while (i < N) {
+        if (pat[j] == str[i]) {
+            j++;
+            i++;
+        }
+        if (j == M) {
+            printf("Found pattern at index %d ", i - j);
+            j = lps[j - 1];
+        }
+        else if (i < N && pat[j] != str[i]) {
+            if (j != 0)
+                j = lps[j - 1];
+            else
+                i = i + 1;
+        }
+    }
+}
+```
 
 # 10) Minimum characters needed to be inserted in the beginning to make it palindromic  
 First we need to find length of longest palindromic subsequence in the given string. And the answer is length - that.  
