@@ -14,4 +14,36 @@ You are blindfolded and 10 coins are placed in front of you on the table. You ar
 Can you make two piles of coins each with the same number of heads up? You can flip the coins any number of times.   
 **Solution** - First arrange 5-5 coins in both piles. flip all the coins in any one of the piles.  
 
-# 4) 
+# 4) Mislabeled Jars  
+
+# 5) 50 red marbles and 50 blue marbles  
+
+# 6) Minimum cut puzzle  
+
+# 7) 100 doors  
+
+# 8) Find the fastest 3 horses  
+
+# 9) Calculate total distance travelled by the bee  
+
+# 10) 3 cuts to cut the round cake into 8 pieces  
+
+# 11) Find the last ball to remain after the entire process  
+
+# 12) The two water jug  
+
+# 13) 3 Bulbs and 3 switches  
+
+# 14) How to measure 45 minutes using 2 identical wires  
+
+# 15) Find ages of daughters  
+
+# 16) 10 Balls in 5 lines  
+
+# 17) Pay an employee using a gold rod of 7 units  
+
+# 18) Torch and bridge  
+
+# 19) Poison and Rat  
+
+# 20) Camel and Banana puzzle  
