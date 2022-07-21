@@ -14,3 +14,11 @@ for (int i = n - 1; i >= 0; i--) {
 TC - O(V), SC - O(1)  
 
 # 2) Job sequencing Problem  
+
+# 3) N meetings in one room  
+
+# 4) Minimum number of platforms required  
+
+# 5) Fractional Knapsack  
+
+# 6) Activity Selection  
