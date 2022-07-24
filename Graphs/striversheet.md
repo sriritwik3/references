@@ -499,14 +499,273 @@ public:
 ```
 
 # 13) Strongly connected components(using kosaraju algo)  
-
+SCC means - a component in which if we take any node and reachout to every other node in that component.  
+![image](https://user-images.githubusercontent.com/56584349/180655974-b61c2323-2a67-4c1e-aede-190fd60483bc.png)  
+We definitely cannot do DFS because we would end up visiting all nodes in a CC and couldn't find SCC.  
+So we could do one thing i.e do dfs by visiting the nodes in reverse order such that there will be no way in which we go back if it's not an scc.  
+For this numbering, we may need to use toposort ordering and follow it in reverse.  
+- Sort all the nodes according to their topo sort(loosely based topo sort as we may have cycles here)  
+- Transpose the graph i.e reverse all the edges of the graph  
+- Use the topo sort or the increasing order of finishing time to find the strongly connected components using DFS.  
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+void dfs(int node, stack<int> &st, vector<int> &vis, vector<int> adj[]) {
+    vis[node] = 1; 
+    for(auto it: adj[node]) {
+        if(!vis[it]) {
+            dfs(it, st, vis, adj); 
+        }
+    }
+    
+    st.push(node); 
+}
+void revDfs(int node, vector<int> &vis, vector<int> transpose[]) {
+    cout << node << " "; 
+    vis[node] = 1; 
+    for(auto it: transpose[node]) {
+        if(!vis[it]) {
+            revDfs(it, vis, transpose); 
+        }
+    }
+}
+int main() {
+    int n=6, m=7;
+	vector<int> adj[n+1]; 
+	adj[1].push_back(3);
+	adj[2].push_back(1);
+	adj[3].push_back(2);
+	adj[3].push_back(5);
+	adj[4].push_back(6);
+	adj[5].push_back(4);
+	adj[6].push_back(5);
+	stack<int> st;
+	vector<int> vis(n+1, 0); 
+	for(int i = 1;i<=n;i++) {
+	    if(!vis[i]) {
+	        dfs(i, st, vis, adj); 
+	    }
+	} 
+	vector<int> transpose[n+1]; 
+	for(int i = 1;i<=n;i++) {
+	    vis[i] = 0; 
+	    for(auto it: adj[i]) {
+	        transpose[it].push_back(i); 
+	    }
+	}
+	
+	while(!st.empty()) {
+	    int node = st.top();
+	    st.pop(); 
+	    if(!vis[node]) {
+	        cout << "SCC: "; 
+	        revDfs(node, vis, transpose); 
+	        cout << endl; 
+	    }
+	}
+	return 0;
+}
+```
+Time Complexity: O(N+E), DFS+TopoSort  
+Space Complexity: O(N+E), Transposing the graph
 
 # 14) MST using prim's  
+Spanning tree - converting a graph to a tree such that number of edges are n-1.  Every node should be reachable by every other node.  
+Minimum Spanning tree(MST) is a ST for which weights of all edges is minimum.   
+**Prims**  
+**Intuition:** Let’s start with anyone node in our graph. As the first step, we find out all the adjacent edges connected to this node and then pick up the minimum one. Now we have 2 nodes. We further continue this process but now we would consider all the edges connected to these two nodes and pickup the minimum one. We then continue this process until all the nodes are covered.  
+**Note:** It might happen that while picking up an edge we might end up forming a cycle. In that case, we would pick up the next lowest edge that doesn’t form a cycle.  
+We use three arrays to achieve this -   
+- **Key** : This array holds the weight/ cost of the MST(intialized to INT_MAX except the index 0 which is set with value of zero)  
+- **MST** : This is a boolean array which indicates whether a node is already a part of MST or not(initialized to false except the index 0 which is true)  
+- **Parent**:  This indicates the parent of a particular node in the MST(initialized to -1)  
+
+- Assuming we start with node 0, the index 0 in the key array is initialized to zero(because it is the first node in the MST). We find the index/node in the key array which has the minimum weight. We then find all its adjacent edges and pickup the the one with minimum weight.   
+- Also at the same time we mark this node as true(indicating that it is now a part of the MST) and also set it’s parent as node ‘0’.   
+- After this, we would continue to find the one with minimum weight in the key array that is not a part of the MST(Notice that this is where we ensure that we pickup the node with minimum weight and we do not choose an edge that might cause a cycle)  
+- We continue this process until all nodes become a part of the MST  
+```cpp
+int parent[N];
+    int key[N]; 
+    bool mstSet[N]; 
+  
+    for (int i = 0; i < N; i++) 
+        key[i] = INT_MAX, mstSet[i] = false; 
+    key[0] = 0; 
+    parent[0] = -1; 
+    int ansWeight = 0;
+    for (int count = 0; count < N - 1; count++)
+    { 
+        
+        int mini = INT_MAX, u; 
+  
+        for (int v = 0; v < N; v++) 
+{
+            if (mstSet[v] == false && key[v] < mini) 
+                mini = key[v], u = v; 
+}
+                 mstSet[u] = true; 
+        
+        for (auto it : adj[u]) {
+            int v = it.first;
+            int weight = it.second;
+            if (mstSet[v] == false && weight < key[v]) 
+                parent[v] = u, key[v] = weight; 
+        }
+            
+    } 
+    
+    
+    for (int i = 1; i < N; i++) 
+        cout << parent[i] << " - " << i <<" \n"; 
+```
+TC - O(N^2), SC - O(N)  
+We can optimise this by using a min heap instead of finding the smallest every single time in linear time.  
+```cpp
+int parent[N]; 
+    int key[N]; 
+    bool mstSet[N]; 
+    for (int i = 0; i < N; i++) 
+        key[i] = INT_MAX, mstSet[i] = false; 
+    
+    priority_queue< pair<int,int>, vector <pair<int,int>> , greater<pair<int,int>> > pq;
+
+    key[0] = 0; 
+    parent[0] = -1; 
+    pq.push({0, 0});
+
+    while(!pq.empty())
+    { 
+        int u = pq.top().second; 
+        pq.pop();       
+        mstSet[u] = true; 
+        for (auto it : adj[u]) {
+            int v = it.first;
+            int weight = it.second;
+            if (mstSet[v] == false && weight < key[v]) {
+                parent[v] = u;
+	    key[v] = weight; 
+                pq.push({key[v], v});    
+            }
+        }            
+    } 
+    
+    for (int i = 1; i < N; i++) 
+        cout << parent[i] << " - " << i <<" \n"; 
+```
+TC - O(NLOGN), SC - O(N)  
 
 # 15) MST using Kruskal's  
 
+
 # 16) Dijkstra's Algorithm  
+Given a weighted, undirected, and connected graph of V vertices and E edges, Find the shortest distance of all the vertex’s from the source vertex S.  
+Note: The Graph doesn’t contain any negative weight cycle.  
+```cpp
+#include<bits/stdc++.h>
+using namespace std;
+int main(){
+	int n=5,m=6,source=1;
+	vector<pair<int,int> > g[n+1]; 	// assuming 1 based indexing of graph
+	// Constructing the graph
+	g[1].push_back({2,2});
+	g[1].push_back({4,1});
+	g[2].push_back({1,2});
+	g[2].push_back({5,5});
+	g[2].push_back({3,4});
+	g[3].push_back({2,4});
+	g[3].push_back({4,3});
+	g[3].push_back({5,1});
+	g[4].push_back({1,1});
+	g[4].push_back({3,3});
+	g[5].push_back({2,5});
+	g[5].push_back({3,1});	
+	// Dijkstra's algorithm begins from here
+	priority_queue<pair<int,int>,vector<pair<int,int> >,greater<pair<int,int>>> pq;
+	vector<int> distTo(n+1,INT_MAX);//1-indexed array for calculating shortest paths
+	distTo[source] = 0;
+	pq.push(make_pair(0,source));	// (dist,source)
+	while( !pq.empty() ){
+		int dist = pq.top().first;
+		int prev = pq.top().second;
+		pq.pop();
+		vector<pair<int,int> >::iterator it;
+		for( it = g[prev].begin() ; it != g[prev].end() ; it++){
+			int next = it->first;
+			int nextDist = it->second;
+			if( distTo[next] > distTo[prev] + nextDist){
+				distTo[next] = distTo[prev] + nextDist;
+				pq.push(make_pair(distTo[next], next));
+			}
+		}
+	}
+	cout << "The distances from source " << source << " are : \n";
+	for(int i = 1 ; i<=n ; i++)	cout << distTo[i] << " ";
+	cout << "\n";
+	return 0;
+}
+```
+Time Complexity: O((N+E) * logN). Going through N nodes and E edges and log N for priority queue  
+Space Complexity: O(N). Distance array and priority queue  
 
 # 17) Bellman-Ford algorithm  
 
-# 18) Floyd Warshall algorithm  
+
+# 18) Floyd Warshall algorithm   
+The Floyd Warshall Algorithm is for solving the All Pairs Shortest Path problem. The problem is to find shortest distances between every pair of vertices in a given edge weighted directed Graph.   
+We initialize the solution matrix same as the input graph matrix as a first step. Then we update the solution matrix by considering all vertices as an intermediate vertex. The idea is to one by one pick all vertices and updates all shortest paths which include the picked vertex as an intermediate vertex in the shortest path. When we pick vertex number k as an intermediate vertex, we already have considered vertices {0, 1, 2, .. k-1} as intermediate vertices. For every pair (i, j) of the source and destination vertices respectively, there are two possible cases.   
+1) k is not an intermediate vertex in shortest path from i to j. We keep the value of dist[i][j] as it is.   
+2) k is an intermediate vertex in shortest path from i to j. We update the value of dist[i][j] as dist[i][k] + dist[k][j] if dist[i][j] > dist[i][k] + dist[k][j]  
+The following figure shows the above optimal substructure property in the all-pairs shortest path problem.  
+```cpp
+void floydWarshall(int graph[][V])
+{
+    /* dist[][] will be the output matrix
+    that will finally have the shortest
+    distances between every pair of vertices */
+    int dist[V][V], i, j, k;
+ 
+    /* Initialize the solution matrix same
+    as input graph matrix. Or we can say
+    the initial values of shortest distances
+    are based on shortest paths considering
+    no intermediate vertex. */
+    for (i = 0; i < V; i++)
+        for (j = 0; j < V; j++)
+            dist[i][j] = graph[i][j];
+ 
+    /* Add all vertices one by one to
+    the set of intermediate vertices.
+    ---> Before start of an iteration,
+    we have shortest distances between all
+    pairs of vertices such that the
+    shortest distances consider only the
+    vertices in set {0, 1, 2, .. k-1} as
+    intermediate vertices.
+    ----> After the end of an iteration,
+    vertex no. k is added to the set of
+    intermediate vertices and the set becomes {0, 1, 2, ..
+    k} */
+    for (k = 0; k < V; k++) {
+        // Pick all vertices as source one by one
+        for (i = 0; i < V; i++) {
+            // Pick all vertices as destination for the
+            // above picked source
+            for (j = 0; j < V; j++) {
+                // If vertex k is on the shortest path from
+                // i to j, then update the value of
+                // dist[i][j]
+                if (dist[i][j] > (dist[i][k] + dist[k][j])
+                    && (dist[k][j] != INF
+                        && dist[i][k] != INF))
+                    dist[i][j] = dist[i][k] + dist[k][j];
+            }
+        }
+    }
+
+    // Print the shortest distance matrix
+    printSolution(dist);
+}
+```  
+Time Complexity: O(V^3)
+Auxiliary Space: O(V^2)
