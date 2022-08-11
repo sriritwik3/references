@@ -70,7 +70,7 @@ public:
         int m = 0;
         vector<int> dp(k+1,0);
         for( m=0; dp[k] < n;m++)
-            for(int i=k;i>=0;i--) dp[i] += dp[i-1] + 1;
+            for(int i=k;i>=1;i--) dp[i] += dp[i-1] + 1;
         
         return m;
     }
