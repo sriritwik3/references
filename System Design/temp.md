@@ -1,1 +1,7 @@
-will be removed
+###  Resources
+1. https://www.linkedin.com/feed/update/urn:li:activity:7028982621812506624/
+2. https://github.com/tssovi/grokking-the-object-oriented-design-interview
+3. https://github.com/sharanyaa/grok_sdi_educative/blob/master/grok_system_design_interview.pdf
+4. System Design Interview - An Insider's Guide Book by Alex Xu
+
+
