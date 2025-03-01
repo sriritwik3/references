@@ -769,3 +769,505 @@ void floydWarshall(int graph[][V])
 ```  
 Time Complexity: O(V^3)
 Auxiliary Space: O(V^2)
+
+# Dis joint set union
+https://takeuforward.org/data-structure/disjoint-set-union-by-rank-union-by-size-path-compression-g-46/
+
+The disjoint set data structure generally provides two types of functionalities:
+
+Finding the parent for a particular node (findPar()) 
+Union (in broad terms this method basically adds an edge between two nodes) 
+Union by rank 
+Union by size 
+
+### Union by rank 
+The rank of a node generally refers to the distance (the number of nodes including the leaf node) between the furthest leaf node and the current node. Basically rank includes all the nodes beneath the current node. 
+
+### Ultimate parent:  
+The parent of a node generally refers to the node right above that particular node. But the ultimate parent refers to the topmost node or the root node. 
+
+#### Initial configuration:
+
+**rank array**: This array is initialized with zero.  
+
+**parent array**: The array is initialized with the value of nodes i.e. parent[i] = i.  
+
+The algorithm steps are as follows:  
+
+Firstly, the Union function requires two nodes(let’s say u and v) as arguments. Then we will find the ultimate parent (using the findPar() function that is discussed later) of u and v. Let’s consider the ultimate parent of u is pu and the ultimate parent of v is pv.  
+
+After that, we will find the rank of pu and pv.  
+
+Finally, we will connect the ultimate parent with a smaller rank to the other ultimate parent with a larger rank. But if the ranks are equal, we can connect any parent to the other parent and we will increase the rank by one for the parent node to whom we have connected the other one.  
+
+Now, if we try to find the ultimate parent(typically using recursion) of each query separately, it will end up taking O(logN) time complexity for each case. But we want the operation to be done in a constant time. This is where the **path compression** technique comes in.  
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+class DisjointSet {
+    vector<int> rank, parent, size;
+public:
+    DisjointSet(int n) {
+        rank.resize(n + 1, 0);
+        parent.resize(n + 1);
+        size.resize(n + 1);
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] < rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] < rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] < size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};
+int main() {
+    DisjointSet ds(7);
+    ds.unionBySize(1, 2);
+    ds.unionBySize(2, 3);
+    ds.unionBySize(4, 5);
+    ds.unionBySize(6, 7);
+    ds.unionBySize(5, 6);
+    // if 3 and 7 same or not
+    if (ds.findUPar(3) == ds.findUPar(7)) {
+        cout << "Same\n";
+    }
+    else cout << "Not same\n";
+
+    ds.unionBySize(3, 7);
+
+    if (ds.findUPar(3) == ds.findUPar(7)) {
+        cout << "Same\n";
+    }
+    else cout << "Not same\n";
+    return 0;
+}
+```
+**Time complexity** - O(4x)  
+
+
+# Kruskal's algorithm for MST
+
+The algorithm steps are as follows:  
+
+First, we need to extract the edge information(if not given already) from the given adjacency list in the format of (wt, u, v) where u is the current node, v is the adjacent node and wt is the weight of the edge between node u and v and we will store the tuples in an array.  
+
+Then the array must be sorted in the ascending order of the weights so that while iterating we can get the edges with the minimum weights first.
+After that, we will iterate over the edge information, and for each tuple, we will apply the  following operation:  
+
+First, we will take the two nodes u and v from the tuple and check if the ultimate parents of both nodes are the same or not using the findUPar() function provided by the Disjoint Set data structure.  
+
+If the ultimate parents are the same, we need not do anything to that edge as there already exists a path between the nodes and we will continue to the next tuple.  
+
+If the ultimate parents are different, we will add the weight of the edge to our final answer(i.e. mstWt variable used in the following code) and apply the union operation(i.e. either unionBySize(u, v) or unionByRank(u, v)) with the nodes u and v. The union operation is also provided by the Disjoint Set.  
+
+Finally, we will get our answer (in the mstWt variable as used in the following code) successfully.  
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+
+class DisjointSet {
+    vector<int> rank, parent, size;
+public:
+    DisjointSet(int n) {
+        rank.resize(n + 1, 0);
+        parent.resize(n + 1);
+        size.resize(n + 1);
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] < rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] < rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] < size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};
+class Solution
+{
+public:
+    //Function to find sum of weights of edges of the Minimum Spanning Tree.
+    int spanningTree(int V, vector<vector<int>> adj[])
+    {
+        // 1 - 2 wt = 5
+        /// 1 - > (2, 5)
+        // 2 -> (1, 5)
+
+        // 5, 1, 2
+        // 5, 2, 1
+        vector<pair<int, pair<int, int>>> edges;
+        for (int i = 0; i < V; i++) {
+            for (auto it : adj[i]) {
+                int adjNode = it[0];
+                int wt = it[1];
+                int node = i;
+
+                edges.push_back({wt, {node, adjNode}});
+            }
+        }
+        DisjointSet ds(V);
+        sort(edges.begin(), edges.end());
+        int mstWt = 0;
+        for (auto it : edges) {
+            int wt = it.first;
+            int u = it.second.first;
+            int v = it.second.second;
+
+            if (ds.findUPar(u) != ds.findUPar(v)) {
+                mstWt += wt;
+                ds.unionBySize(u, v);
+            }
+        }
+
+        return mstWt;
+    }
+};
+
+int main() {
+
+    int V = 5;
+    vector<vector<int>> edges = {{0, 1, 2}, {0, 2, 1}, {1, 2, 1}, {2, 3, 2}, {3, 4, 1}, {4, 2, 2}};
+    vector<vector<int>> adj[V];
+    for (auto it : edges) {
+        vector<int> tmp(2);
+        tmp[0] = it[1];
+        tmp[1] = it[2];
+        adj[it[0]].push_back(tmp);
+
+        tmp[0] = it[0];
+        tmp[1] = it[2];
+        adj[it[1]].push_back(tmp);
+    }
+
+    Solution obj;
+    int mstWt = obj.spanningTree(V, adj);
+    cout << "The sum of all the edge weights: " << mstWt << endl;
+    return 0;
+}
+```
+
+**Time Complexity:** O(N+E) + O(E logE) + O(E*4α*2)   where N = no. of nodes and E = no. of edges. O(N+E) for extracting edge information from the adjacency list. O(E logE) for sorting the array consists of the edge tuples. Finally, we are using the disjoint set operations inside a loop. The loop will continue to E times. Inside that loop, there are two disjoint set operations like findUPar() and UnionBySize() each taking 4 and so it will result in 4*2. That is why the last term O(E*4*2) is added.  
+
+**Space Complexity:** O(N) + O(N) + O(E) where E = no. of edges and N = no. of nodes. O(E) space is taken by the array that we are using to store the edge information. And in the disjoint set data structure, we are using two N-sized arrays i.e. a parent and a size array (as we are using unionBySize() function otherwise, a rank array of the same size if unionByRank() is used) which result in the first two terms O(N).  
+
+
+# Number of Operations to Make Network Connected  
+You are given a graph with n vertices and m edges. You can remove one edge from anywhere and add that edge between any two vertices in one operation. Find the minimum number of operations that will be required to make the graph connected. If it is not possible to make the graph connected, return -1.  
+
+- First we need to extract all the edge information (If not already given) in the form of the pair (u, v) where u = starting node and v = ending node. We should store all the edge information in an array.  
+- Then we will iterate through the array selecting every pair and checking the following:  
+- If the ultimate parent of u and v(checked using the findPar() method of the Disjoint set) becomes the same,  we should increase the count of extra-edges by 1.
+- Because the same ultimate parent means the nodes are already connected and so we can consider the current edge as an extra edge.
+- But if the ultimate parents are different, then we should apply the union(either unionBySize() or unionByRank()) method on those two nodes.
+- Thus we will get the count of the extra edges. Now it’s time to count the number of components. In order to do so, we will just count the number of the nodes that are the ultimate parent of themselves.
+- We will iterate over all the nodes and for each node, we will check the following:
+- If the node is the ultimate parent of itself, we will increase the count of components by 1.
+Otherwise, we will continue to the next node.  
+This checking will be done using the parent array inside the Disjoint set.  
+
+Finally, we will check the count of extra edges and the number of components. If the count of extra-edges is greater or the same, we will return the answer that is (number of components - 1), and otherwise, we will return -1.  
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+//User function Template for C++
+class DisjointSet {
+public:
+    vector<int> rank, parent, size;
+    DisjointSet(int n) {
+        rank.resize(n + 1, 0);
+        parent.resize(n + 1);
+        size.resize(n + 1);
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] < rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] < rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] < size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};
+class Solution {
+public:
+    int Solve(int n, vector<vector<int>>& edge) {
+        DisjointSet ds(n);
+        int cntExtras = 0;
+        for (auto it : edge) {
+            int u = it[0];
+            int v = it[1];
+            if (ds.findUPar(u) == ds.findUPar(v)) {
+                cntExtras++;
+            }
+            else {
+                ds.unionBySize(u, v);
+            }
+        }
+        int cntC = 0;
+        for (int i = 0; i < n; i++) {
+            if (ds.parent[i] == i) cntC++;
+        }
+        int ans = cntC - 1;
+        if (cntExtras >= ans) return ans;
+        return -1;
+    }
+};
+
+int main() {
+
+    int V = 9;
+    vector<vector<int>> edge = {{0, 1}, {0, 2}, {0, 3}, {1, 2}, {2, 3}, {4, 5}, {5, 6}, {7, 8}};
+
+    Solution obj;
+    int ans = obj.Solve(V, edge);
+    cout << "The number of operations needed: " << ans << endl;
+    return 0;
+}
+```
+
+# Account merge
+
+Given: N = 6
+accounts [ ] =
+[["John","j1@com","j2@com","j3@com"],
+["John","j4@com"],
+["Raj",”r1@com”, “r2@com”],
+["John","j1@com","j5@com"],
+["Raj",”r2@com”, “r3@com”],
+["Mary","m1@com"]]
+
+- Here we will perform the disjoint set operations on the indices of the accounts considering them as the nodes. 
+- As in each account, the first element is the name, we will start iterating from the second element in each account to visit only the emails sequentially.  
+The algorithm steps are the following:  
+
+- First, we will create a map data structure. Then we will store each email with the respective index of the account(the email belongs to) in that map data structure.
+- While doing so, if we encounter an email again(i.e. If any index is previously assigned for the email), we will perform union(either unionBySize() or unionByRank()) of the current index and the previously assigned index.
+- After completing step 2, now it’s time to merge the accounts. For merging, we will iterate over all the emails individually and find the ultimate parent(using the findUPar() method) of the assigned index of every email. Then we will add the email of the current account to the index(account index) that is the ultimate parent. Thus the accounts will be merged.
+  
+Finally, we will sort the emails for every account separately and store the final results in the answer array accordingly.  
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+//User function Template for C++
+class DisjointSet {
+    vector<int> rank, parent, size;
+public:
+    DisjointSet(int n) {
+        rank.resize(n + 1, 0);
+        parent.resize(n + 1);
+        size.resize(n + 1);
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] < rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] < rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] < size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};
+
+class Solution {
+public:
+    vector<vector<string>> accountsMerge(vector<vector<string>> &details) {
+        int n = details.size();
+        DisjointSet ds(n);
+        sort(details.begin(), details.end());
+        unordered_map<string, int> mapMailNode;
+        for (int i = 0; i < n; i++) {
+            for (int j = 1; j < details[i].size(); j++) {
+                string mail = details[i][j];
+                if (mapMailNode.find(mail) == mapMailNode.end()) {
+                    mapMailNode[mail] = i;
+                }
+                else {
+                    ds.unionBySize(i, mapMailNode[mail]);
+                }
+            }
+        }
+
+        vector<string> mergedMail[n];
+        for (auto it : mapMailNode) {
+            string mail = it.first;
+            int node = ds.findUPar(it.second);
+            mergedMail[node].push_back(mail);
+        }
+
+        vector<vector<string>> ans;
+
+        for (int i = 0; i < n; i++) {
+            if (mergedMail[i].size() == 0) continue;
+            sort(mergedMail[i].begin(), mergedMail[i].end());
+            vector<string> temp;
+            temp.push_back(details[i][0]);
+            for (auto it : mergedMail[i]) {
+                temp.push_back(it);
+            }
+            ans.push_back(temp);
+        }
+        sort(ans.begin(), ans.end());
+        return ans;
+    }
+};
+
+
+int main() {
+
+    vector<vector<string>> accounts = {{"John", "j1@com", "j2@com", "j3@com"},
+        {"John", "j4@com"},
+        {"Raj", "r1@com", "r2@com"},
+        {"John", "j1@com", "j5@com"},
+        {"Raj", "r2@com", "r3@com"},
+        {"Mary", "m1@com"}
+    };
+
+
+    Solution obj;
+    vector<vector<string>> ans = obj.accountsMerge(accounts);
+    for (auto acc : ans) {
+        cout << acc[0] << ":";
+        int size = acc.size();
+        for (int i = 1; i < size; i++) {
+            cout << acc[i] << " ";
+        }
+        cout << endl;
+    }
+    return 0;
+}
+```
+
+**Time Complexity:** O(N+E) + O(E*4ɑ) + O(N*(ElogE + E)) where N = no. of indices or nodes and E = no. of emails. The first term is for visiting all the emails. The second term is for merging the accounts. And the third term is for sorting the emails and storing them in the answer array.
+
+**Space Complexity:** O(N)+ O(N) +O(2N) ~ O(N) where N = no. of nodes/indices. The first and second space is for the ‘mergedMail’ and the ‘ans’ array. The last term is for the parent and size array used inside the Disjoint set data structure.
