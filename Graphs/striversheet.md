@@ -656,7 +656,7 @@ int parent[N];
 TC - O(NLOGN), SC - O(N)  
 
 # 15) MST using Kruskal's  
-
+Added below  
 
 # 16) Dijkstra's Algorithm  
 Given a weighted, undirected, and connected graph of V vertices and E edges, Find the shortest distance of all the vertex’s from the source vertex S.  
@@ -709,6 +709,91 @@ Time Complexity: O((N+E) * logN). Going through N nodes and E edges and log N fo
 Space Complexity: O(N). Distance array and priority queue  
 
 # 17) Bellman-Ford algorithm  
+While learning Dijkstra's algorithm, we came across the following two situations, where Dijkstra's algorithm failed:
+
+- If the graph contains negative edges.
+- If the graph has a negative cycle (In this case Dijkstra's algorithm fails to minimize the distance, keeps on running, and goes into an infinite loop. As a result it gives TLE error).
+**Negative Cycle:** A cycle is called a negative cycle if the sum of all its weights becomes negative. The following illustration is an example of a negative cycle:
+
+**approach**
+
+distance array(dist[ ]): The dist[] array will be initialized with infinity, except for the source node as dist[src] will be initialized to 0.  
+
+The algorithm steps will be the following:  
+
+- First, we will initialize the source node in the distance array to 0 and the rest of the nodes to infinity.
+- Then we will run a loop for N-1 times.
+- Inside that loop, we will try to relax every given edge.
+- For example, one of the given edge information is like (u, v, wt), where u = starting node of the edge, v = ending node, and wt = edge weight. For all edges like this we will be checking if node u is reachable and if the distance to reach v through u is less than the distance to v found until now(i.e. dist[u] and dist[u]+ wt < dist[v]).
+- After repeating the 3rd step for N-1 times, we will apply the same step one more time to check if the negative cycle exists. If we found further relaxation is possible, we will conclude the graph has a negative cycle and from this step, we will return a distance array of -1(i.e. minimization of distances is not possible).
+- Otherwise, we will return the distance array which contains all the minimized distances.
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+	/*  Function to implement Bellman Ford
+	*   edges: vector of vectors which represents the graph
+	*   S: source vertex to start traversing graph with
+	*   V: number of vertices
+	*/
+	vector<int> bellman_ford(int V, vector<vector<int>>& edges, int S) {
+		vector<int> dist(V, 1e8);
+		dist[S] = 0;
+		for (int i = 0; i < V - 1; i++) {
+			for (auto it : edges) {
+				int u = it[0];
+				int v = it[1];
+				int wt = it[2];
+				if (dist[u] != 1e8 && dist[u] + wt < dist[v]) {
+					dist[v] = dist[u] + wt;
+				}
+			}
+		}
+		// Nth relaxation to check negative cycle
+		for (auto it : edges) {
+			int u = it[0];
+			int v = it[1];
+			int wt = it[2];
+			if (dist[u] != 1e8 && dist[u] + wt < dist[v]) {
+				return { -1};
+			}
+		}
+
+
+		return dist;
+	}
+};
+
+
+int main() {
+
+	int V = 6;
+	vector<vector<int>> edges(7, vector<int>(3));
+	edges[0] = {3, 2, 6};
+	edges[1] = {5, 3, 1};
+	edges[2] = {0, 1, 5};
+	edges[3] = {1, 5, -3};
+	edges[4] = {1, 2, -2};
+	edges[5] = {3, 4, -2};
+	edges[6] = {2, 4, 3};
+
+	int S = 0;
+	Solution obj;
+	vector<int> dist = obj.bellman_ford(V, edges, S);
+	for (auto d : dist) {
+		cout << d << " ";
+	}
+	cout << endl;
+
+	return 0;
+}
+```
+
+**Time Complexity:** O(V*E), where V = no. of vertices and E = no. of Edges.  
+
+**Space Complexity:** O(V) for the distance array which stores the minimized distances.  
 
 
 # 18) Floyd Warshall algorithm   
@@ -1668,7 +1753,697 @@ int main() {
 
 **Space Complexity:** O(2* (max row index + max column index)) for the parent and size array inside the Disjoint Set data structure.
 
-# Strongly connected components
+# Number of provinces
+Given an undirected graph with V vertices. We say two vertices u and v belong to a single province if there is a path from u to v or v to u. Your task is to find the number of provinces.  
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+  private: 
+    // dfs traversal function 
+    void dfs(int node, vector<int> adjLs[], int vis[]) {
+        // mark the more as visited
+        vis[node] = 1; 
+        for(auto it: adjLs[node]) {
+            if(!vis[it]) {
+                dfs(it, adjLs, vis); 
+            }
+        }
+    }
+  public:
+    int numProvinces(vector<vector<int>> adj, int V) {
+        vector<int> adjLs[V]; 
+        
+        // to change adjacency matrix to list 
+        for(int i = 0;i<V;i++) {
+            for(int j = 0;j<V;j++) {
+                // self nodes are not considered
+                if(adj[i][j] == 1 && i != j) {
+                    adjLs[i].push_back(j); 
+                    adjLs[j].push_back(i); 
+                }
+            }
+        }
+        int vis[V] = {0}; 
+        int cnt = 0; 
+        for(int i = 0;i<V;i++) {
+            // if the node is not visited
+            if(!vis[i]) {
+                // counter to count the number of provinces 
+                cnt++;
+               dfs(i, adjLs, vis); 
+            }
+        }
+        return cnt; 
+        
+    }
+};
+
+int main() {
+    
+    vector<vector<int>> adj
+    {
+        {1, 0, 1},
+        {0, 1, 0},
+        {1, 0, 1}
+    };
+
+        
+    Solution ob;
+    cout << ob.numProvinces(adj,3) << endl;
+        
+    return 0;
+}
+```
+**Time Complexity:** O(N) + O(V+2E), Where O(N) is for outer loop and inner loop runs in total a single DFS over entire graph, and we know DFS takes a time of O(V+2E).   
+
+**Space Complexity:** O(N) + O(N),Space for recursion stack space and visited array.  
+
+# Flood fill algorithm
+An image is represented by a 2-D array of integers, each integer representing the pixel value of the image. Given a coordinate (sr, sc) representing the starting pixel (row and column) of the flood fill, and a pixel value newColor, "flood fill" the image.  
+
+To perform a "flood fill", consider the starting pixel, plus any pixels connected 4-directionally to the starting pixel of the same colour as the starting pixel, plus any pixels connected 4-directionally to those pixels (also with the same colour as the starting pixel), and so on. Replace the colour of all of the aforementioned pixels with the newColor.  
+
+```cpp
+#include<bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    void dfs(int row, int col, vector<vector<int>>&ans,
+     vector<vector<int>>& image, int newColor, int delRow[], int delCol[],
+     int iniColor) {
+        // color with new color
+        ans[row][col] = newColor; 
+        int n = image.size();
+        int m = image[0].size(); 
+        // there are exactly 4 neighbours
+        for(int i = 0;i<4;i++) {
+            int nrow = row + delRow[i]; 
+            int ncol = col + delCol[i]; 
+            // check for valid coordinate 
+            // then check for same initial color and unvisited pixel
+            if(nrow>=0 && nrow<n && ncol>=0 && ncol < m && 
+            image[nrow][ncol] == iniColor && ans[nrow][ncol] != newColor) {
+                dfs(nrow, ncol, ans, image, newColor, delRow, delCol, iniColor); 
+            }
+        }
+    }
+public:
+    vector<vector<int>> floodFill(vector<vector<int>>& image, 
+    int sr, int sc, int newColor) {
+        // get initial color
+        int iniColor = image[sr][sc]; 
+        vector<vector<int>> ans = image; 
+        // delta row and delta column for neighbours
+        int delRow[] = {-1, 0, +1, 0};
+        int delCol[] = {0, +1, 0, -1}; 
+        dfs(sr, sc, ans, image, newColor, delRow, delCol, iniColor); 
+        return ans; 
+    }
+};
+
+int main(){
+		
+	vector<vector<int>>image{
+	    {1,1,1},
+	    {1,1,0},
+	    {1,0,1}
+	};
+	
+// sr = 1, sc = 1, newColor = 2  	
+	Solution obj;
+	vector<vector<int>> ans = obj.floodFill(image, 1, 1, 2);
+	for(auto i: ans){
+		for(auto j: i)
+			cout << j << " ";
+		cout << "\n";
+	}
+	
+	return 0;
+}
+```
+**Time Complexity:** O(NxM + NxMx4) ~ O(N x M)  
+
+For the worst case, all of the pixels will have the same colour, so DFS function will be called for (N x M) nodes and for every node we are traversing for 4 neighbours, so it will take O(N x M x 4) time.  
+
+**Space Complexity:** O(N x M) + O(N x M)  
+
+# Rotten Oranges
+You will be given an m x n grid, where each cell has the following values :  
+
+2  -  represents a rotten orange 
+1  -  represents a Fresh orange 
+0  -  represents an Empty Cell 
+Every minute, if a Fresh Orange is adjacent to a Rotten Orange in 4-direction ( upward, downwards, right, and left ) it becomes Rotten.  
+
+Return the minimum number of minutes required such that none of the cells has a Fresh Orange. If it's not possible, return -1. 
+```cpp
+#include<bits/stdc++.h>
+using namespace std;
+    int orangesRotting(vector<vector<int>>& grid) {
+        if(grid.empty()) return 0;
+        int m = grid.size(), n = grid[0].size(), days = 0, tot = 0, cnt = 0;
+        queue<pair<int, int>> rotten;
+        for(int i = 0; i < m; ++i){
+            for(int j = 0; j < n; ++j){
+                if(grid[i][j] != 0) tot++;
+                if(grid[i][j] == 2) rotten.push({i, j});
+            }
+        }
+        
+        int dx[4] = {0, 0, 1, -1};
+        int dy[4] = {1, -1, 0, 0};
+        
+        while(!rotten.empty()){
+            int k = rotten.size();
+            cnt += k; 
+            while(k--){
+                int x = rotten.front().first, y = rotten.front().second;
+                rotten.pop();
+                for(int i = 0; i < 4; ++i){
+                    int nx = x + dx[i], ny = y + dy[i];
+                    if(nx < 0 || ny < 0 || nx >= m || ny >= n || grid[nx][ny] != 1) continue;
+                    grid[nx][ny] = 2;
+                    rotten.push({nx, ny});
+                }
+            }
+            if(!rotten.empty()) days++;
+        }
+        
+        return tot == cnt ? days : -1;
+    }
+
+    int main()
+    {
+        vector<vector<int>> v{ {2,1,1} , {1,1,0} , {0,1,1} } ;
+        int rotting = orangesRotting(v);
+        cout<<"Minimum Number of Minutes Required "<<rotting<<endl;
+        
+    }
+```
+**Time Complexity:** O ( n x n ) x 4    
+Reason: Worst-case - We will be making each fresh orange rotten in the grid and for each rotten orange will check in 4 directions  
+**Space Complexity:** O ( n x n )  
+Reason: worst-case -  If all oranges are Rotten, we will end up pushing all rotten oranges into the Queue data structure  
+
+# Distance of nearest cell having 1
+Given a binary grid of N*M. Find the distance of the nearest 1 in the grid for each cell.  
+
+The distance is calculated as |i1  - i2| + |j1 - j2|, where i1, j1 are the row number and column number of the current cell, and i2, j2 are the row number and column number of the nearest cell having value 1.  
+```cpp
+#include<bits/stdc++.h>
+using namespace std;
+
+class Solution 
+{
+    public:
+    //Function to find the distance of nearest 1 in the grid for each cell.
+	vector<vector<int>>nearest(vector<vector<int>>grid)
+	{
+	    int n = grid.size(); 
+	    int m = grid[0].size(); 
+	    // visited and distance matrix
+	    vector<vector<int>> vis(n, vector<int>(m, 0)); 
+	    vector<vector<int>> dist(n, vector<int>(m, 0)); 
+	    // <coordinates, steps>
+	    queue<pair<pair<int,int>, int>> q; 
+	    // traverse the matrix
+	    for(int i = 0;i<n;i++) {
+	        for(int j = 0;j<m;j++) {
+	            // start BFS if cell contains 1
+	            if(grid[i][j] == 1) {
+	                q.push({{i,j}, 0}); 
+	                vis[i][j] = 1; 
+	            }
+	            else {
+	                // mark unvisited 
+	                vis[i][j] = 0; 
+	            }
+	        }
+	    }
+	    
+	    int delrow[] = {-1, 0, +1, 0}; 
+	    int delcol[] = {0, +1, 0, -1}; 
+	    
+	    // traverse till queue becomes empty
+	    while(!q.empty()) {
+	        int row = q.front().first.first; 
+	        int col = q.front().first.second; 
+	        int steps = q.front().second; 
+	        q.pop(); 
+	        dist[row][col] = steps; 
+	        // for all 4 neighbours
+	        for(int i = 0;i<4;i++) {
+	            int nrow = row + delrow[i]; 
+	            int ncol = col + delcol[i]; 
+	            // check for valid unvisited cell
+	            if(nrow >= 0 && nrow < n && ncol >= 0 && ncol < m 
+	            && vis[nrow][ncol] == 0) {
+	                vis[nrow][ncol] = 1; 
+	                q.push({{nrow, ncol}, steps+1});  
+	            }
+	        }
+	    }
+	    // return distance matrix
+	    return dist; 
+	}
+};
+
+int main(){
+    vector<vector<int>>grid{
+        {0,1,1,0},
+        {1,1,0,0},
+        {0,0,1,1}
+    };
+	
+	Solution obj;
+	vector<vector<int>> ans = obj.nearest(grid);
+		
+	for(auto i: ans){
+		for(auto j: i)
+			cout << j << " ";
+		cout << "\n";
+	}
+	
+	return 0;
+}
+```
+
+#  Surrounded Regions | Replace O's with X's 
+Given a matrix mat of size N x M where every element is either ‘O’ or ‘X’. Replace all ‘O’ with ‘X’ that is surrounded by ‘X’. An ‘O’ (or a set of ‘O’) is considered to be surrounded by ‘X’ if there are ‘X’ at locations just below, just above just left, and just right of it.  
+
+**intuition**  
+- boundary o's cannot be converted
+- pick all boundary o's and traverse from them and all nodes reachable from boundary o cannot be converted
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+    void dfs(int row, int col, vector<vector<int>> &vis, 
+    vector<vector<char>> &mat, int delrow[], int delcol[]) {
+        vis[row][col] = 1; 
+        int n = mat.size();
+        int m = mat[0].size();
+        
+        // check for top, right, bottom, left 
+        for(int i = 0;i<4;i++) {
+            int nrow = row + delrow[i];
+            int ncol = col + delcol[i]; 
+            // check for valid coordinates and unvisited Os
+            if(nrow >=0 && nrow <n && ncol >= 0 && ncol < m 
+            && !vis[nrow][ncol] && mat[nrow][ncol] == 'O') {
+                dfs(nrow, ncol, vis, mat, delrow, delcol); 
+            }
+        }
+    }
+public:
+    vector<vector<char>> fill(int n, int m, 
+    vector<vector<char>> mat)
+    {
+        int delrow[] = {-1, 0, +1, 0};
+        int delcol[] = {0, 1, 0, -1}; 
+        vector<vector<int>> vis(n, vector<int>(m,0)); 
+        // traverse first row and last row 
+        for(int j = 0 ; j<m;j++) {
+            // check for unvisited Os in the boundary rows
+            // first row 
+            if(!vis[0][j] && mat[0][j] == 'O') {
+                dfs(0, j, vis, mat, delrow, delcol); 
+            }
+            
+            // last row 
+            if(!vis[n-1][j] && mat[n-1][j] == 'O') {
+                dfs(n-1,j,vis,mat, delrow, delcol); 
+            }
+        }
+        
+        for(int i = 0;i<n;i++) {
+            // check for unvisited Os in the boundary columns
+            // first column 
+            if(!vis[i][0] && mat[i][0] == 'O') {
+                dfs(i, 0, vis, mat, delrow, delcol); 
+            }
+            
+            // last column
+            if(!vis[i][m-1] && mat[i][m-1] == 'O') {
+                dfs(i, m-1, vis, mat, delrow, delcol); 
+            }
+        }
+        
+        // if unvisited O then convert to X
+        for(int i = 0;i<n;i++) {
+            for(int j= 0 ;j<m;j++) {
+                if(!vis[i][j] && mat[i][j] == 'O') 
+                    mat[i][j] = 'X'; 
+            }
+        }
+        
+        return mat; 
+    }
+};
+
+int main(){
+    
+    vector<vector<char>> mat{
+        {'X', 'X', 'X', 'X'}, 
+        {'X', 'O', 'X', 'X'}, 
+        {'X', 'O', 'O', 'X'}, 
+        {'X', 'O', 'X', 'X'}, 
+        {'X', 'X', 'O', 'O'}
+    };
+    
+    Solution ob;
+    // n = 5, m = 4
+    vector<vector<char>> ans = ob.fill(5, 4, mat);
+    for(int i = 0;i < 5;i++) {
+        for(int j = 0;j < 4;j++) {
+            cout<<ans[i][j]<<" ";
+        }
+        cout<<"\n";
+    }
+    return 0;
+}
+```
+**Time Complexity:** O(N) + O(M) + O(NxMx4) ~ O(N x M), For the worst case, every element will be marked as ‘O’ in the matrix, and the DFS function will be called for (N x M) nodes and for every node, we are traversing for 4 neighbors, so it will take O(N x M x 4) time. Also, we are running loops for boundary elements so it will take O(N) + O(M).  
+
+**Space Complexity** ~ O(N x M), O(N x M) for the visited array, and auxiliary stack space takes up N x M locations at max.   
+
+# No of enclaves 
+You are given an N x M binary matrix grid, where 0 represents a sea cell and 1 represents a land cell. A move consists of walking from one land cell to another adjacent (4-directionally) land cell or walking off the boundary of the grid. Find the number of land cells in the grid for which we cannot walk off the boundary of the grid in any number of moves.  
+
+**Intuition**  
+The land cells present in the boundary cannot be counted in the answer as we will walk off the boundary of the grid. Also, land cells connected to the boundary land cell can never be the answer.   
+
+The intuition is that we need to figure out the boundary land cells, go through their connected land cells and mark them as visited. The sum of all the remaining land cells will be the answer.  
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+  public:
+    int numberOfEnclaves(vector<vector<int>> &grid) {
+        queue<pair<int,int>> q; 
+        int n = grid.size(); 
+        int m = grid[0].size(); 
+        int vis[n][m] = {0}; 
+        // traverse boundary elements
+        for(int i = 0;i<n;i++) {
+            for(int j = 0;j<m;j++) {
+                // first row, first col, last row, last col 
+                if(i == 0 || j == 0 || i == n-1 || j == m-1) {
+                    // if it is a land then store it in queue
+                    if(grid[i][j] == 1) {
+                        q.push({i, j}); 
+                        vis[i][j] = 1; 
+                    }
+                }
+            }
+        }
+        
+        int delrow[] = {-1, 0, +1, 0};
+        int delcol[] = {0, +1, +0, -1}; 
+        
+        while(!q.empty()) {
+            int row = q.front().first; 
+            int col = q.front().second; 
+            q.pop(); 
+            
+            // traverses all 4 directions
+            for(int i = 0;i<4;i++) {
+                int nrow = row + delrow[i];
+                int ncol = col + delcol[i]; 
+                // check for valid coordinates and for land cell
+                if(nrow >=0 && nrow <n && ncol >=0 && ncol < m 
+                && vis[nrow][ncol] == 0 && grid[nrow][ncol] == 1) {
+                    q.push({nrow, ncol});
+                    vis[nrow][ncol] = 1; 
+                }
+            }
+            
+        }
+        
+        int cnt = 0;
+        for(int i = 0;i<n;i++) {
+            for(int j = 0;j<m;j++) {
+                // check for unvisited land cell
+                if(grid[i][j] == 1 & vis[i][j] == 0) 
+                    cnt++; 
+            }
+        }
+        return cnt; 
+    }
+};
+
+int main() {
+    
+    vector<vector<int>> grid{
+        {0, 0, 0, 0},
+        {1, 0, 1, 0},
+        {0, 1, 1, 0},
+        {0, 0, 0, 0}};
+        
+    Solution obj;
+    cout << obj.numberOfEnclaves(grid) << endl;
+
+}
+```
+# No of distinct islands
+Given a boolean 2D matrix grid of size N x M. You have to find the number of distinct islands where a group of connected 1s (horizontally or vertically) forms an island. Two islands are considered to be distinct if and only if one island is equal to another (not rotated or reflected).  
+
+```cpp
+#include<bits/stdc++.h>
+
+using namespace std;
+
+class Solution {
+  private:
+    void dfs(int row, int col, vector < vector < int >> & vis,
+      vector < vector < int >> & grid, vector < pair < int, int >> & vec, int row0, 
+      int col0) {
+      // mark the cell as visited
+      vis[row][col] = 1;
+
+      // coordinates - base coordinates
+      vec.push_back({
+        row - row0,
+        col - col0
+      });
+      int n = grid.size();
+      int m = grid[0].size();
+
+      // delta row and delta column
+      int delrow[] = {-1, 0, +1, 0}; 
+      int delcol[] = {0, -1, 0, +1}; 
+
+      // traverse all 4 neighbours
+      for (int i = 0; i < 4; i++) {
+        int nrow = row + delrow[i];
+        int ncol = col + delcol[i];
+        // check for valid unvisited land neighbour coordinates 
+        if (nrow >= 0 && nrow < n && ncol >= 0 && ncol < m &&
+          !vis[nrow][ncol] && grid[nrow][ncol] == 1) {
+          dfs(nrow, ncol, vis, grid, vec, row0, col0);
+        }
+      }
+    }
+  public:
+    int countDistinctIslands(vector < vector < int >> & grid) {
+      int n = grid.size();
+      int m = grid[0].size();
+      vector < vector < int >> vis(n, vector < int > (m, 0));
+      set < vector < pair < int, int >>> st;
+
+      // traverse the grid
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+          // if not visited and is a land cell
+          if (!vis[i][j] && grid[i][j] == 1) {
+            vector < pair < int, int >> vec;
+            dfs(i, j, vis, grid, vec, i, j);
+            // store in set
+            st.insert(vec);
+          }
+        }
+      }
+      return st.size();
+    }
+};
+
+int main() {
+
+  vector<vector<int>> grid{
+        {1, 1, 0, 1, 1},
+        {1, 0, 0, 0, 0},
+        {0, 0, 0, 0, 1},
+        {1, 1, 0, 1, 1}};
+            
+  Solution obj;
+  cout << obj.countDistinctIslands(grid) << endl;
+
+}
+```
+**Time Complexity:** O(N x M x log(N x M)) + O(NxMx4) ~ O(N x M), For the worst case, assuming all the pieces as land, the DFS function will be called for (N x M) nodes, and for every node, we are traversing for 4 neighbors, it will take O(N x M x 4) time. Set at max will store the complete grid, so it takes log(N x M) time.
+
+**Space Complexity** ~ O(N x M), O(N x M) for the visited array and set takes up N x M locations at max. 
+
+# Find eventual safe states - dfs
+A directed graph of V vertices and E edges is given in the form of an adjacency list adj. Each node of the graph is labeled with a distinct integer in the range 0 to V - 1. A node is a terminal node if there are no outgoing edges. A node is a safe node if every possible path starting from that node leads to a terminal node. You have to return an array containing all the safe nodes of the graph. The answer should be sorted in ascending order.  
+
+**Intuition**  
+If we closely observe, all possible paths starting from a node are going to end at some terminal node unless there exists a cycle and the paths return back to themselves. Let’s understand it considering the below graph:  
+So, the intuition is to figure out the nodes which are either a part of a cycle or incoming to the cycle. We can do this easily using the cycle detection technique that was used previously to detect cycles in a directed graph (using DFS).   
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+// User function Template for C++
+
+class Solution {
+private:
+	bool dfsCheck(int node, vector<int> adj[], int vis[],
+ int pathVis[], 
+        int check[]) {
+		vis[node] = 1;
+		pathVis[node] = 1;
+		check[node] = 0;
+		// traverse for adjacent nodes
+		for (auto it : adj[node]) {
+			// when the node is not visited
+			if (!vis[it]) {
+			if (dfsCheck(it, adj, vis, pathVis, check) == true) {
+					check[node] = 0;
+					return true;
+				}
+
+			}
+			// if the node has been previously visited
+			// but it has to be visited on the same path
+			else if (pathVis[it]) {
+				check[node] = 0;
+				return true;
+			}
+		}
+		check[node] = 1;
+		pathVis[node] = 0;
+		return false;
+	}
+public:
+	vector<int> eventualSafeNodes(int V, vector<int> adj[]) {
+		int vis[V] = {0};
+		int pathVis[V] = {0};
+		int check[V] = {0};
+		vector<int> safeNodes;
+		for (int i = 0; i < V; i++) {
+			if (!vis[i]) {
+				dfsCheck(i, adj, vis, pathVis, check);
+			}
+		}
+		for (int i = 0; i < V; i++) {
+			if (check[i] == 1) safeNodes.push_back(i);
+		}
+		return safeNodes;
+	}
+};
+
+
+int main() {
+
+	//V = 12;
+	vector<int> adj[12] = {{1}, {2}, {3}, {4, 5}, {6}, {6}, {7}, {}, {1, 9}, {10}, 
+        {8},{9}};
+	int V = 12;
+	Solution obj;
+	vector<int> safeNodes = obj.eventualSafeNodes(V, adj);
+
+	for (auto node : safeNodes) {
+		cout << node << " ";
+	}
+	cout << endl;
+
+	return 0;
+}
+```
+**Time Complexity:** O(V+E)+O(V), where V = no. of nodes and E = no. of edges. There can be at most V components. So, another O(V) time complexity.
+
+**Space Complexity:** O(3N) + O(N) ~ O(3N): O(3N) for three arrays required during dfs calls and O(N) for recursive stack space.
+
+# Eventual safe states - BFS
+The algorithm steps are as follows:  
+
+- First, we will reverse all the edges of the graph so that we can apply the topological sort algorithm afterward.
+- Then, we will calculate the indegree of each node and store it in the indegree array. We can iterate through the given adj list, and simply for every node u->v, we can increase the indegree of v by 1 in the indegree array. 
+- Then, we will push the node(s) with indegree 0 into the queue.
+- Then, we will pop a node from the queue including the node in our safeNodes array, and for all its adjacent nodes, we will decrease the indegree of that node by one. For example, if node u that has been popped out from the queue has an edge towards node v(u->v), we will decrease indegree[v] by 1.
+- After that, if for any node the indegree becomes 0, we will push that node again into the queue.
+- We will repeat steps 3 and 4 until the queue is completely empty. Finally, completing the BFS we will get the linear ordering of the nodes in the safeNodes array.
+- Finally, the safeNodes array will only consist of the nodes that are neither a part of any cycle nor connected to any cycle. Then we will sort the final safeNodes array as the question requires the answer in sorted order.
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+
+class Solution {
+public:
+	vector<int> eventualSafeNodes(int V, vector<int> adj[]) {
+		vector<int> adjRev[V];
+		int indegree[V] = {0};
+		for (int i = 0; i < V; i++) {
+			// i -> it
+			// it -> i
+			for (auto it : adj[i]) {
+				adjRev[it].push_back(i);
+				indegree[i]++;
+			}
+		}
+		queue<int> q;
+		vector<int> safeNodes;
+		for (int i = 0; i < V; i++) {
+			if (indegree[i] == 0) {
+				q.push(i);
+			}
+		}
+
+		while (!q.empty()) {
+			int node = q.front();
+			q.pop();
+			safeNodes.push_back(node);
+			for (auto it : adjRev[node]) {
+				indegree[it]--;
+				if (indegree[it] == 0) q.push(it);
+			}
+		}
+
+		sort(safeNodes.begin(), safeNodes.end());
+		return safeNodes;
+	}
+};
+
+int main() {
+
+	vector<int> adj[12] = {{1}, {2}, {3, 4}, {4, 5}, {6}, {6}, {7}, {}, {1, 9}, {10},
+		{8}, {9}
+	};
+	int V = 12;
+	Solution obj;
+	vector<int> safeNodes = obj.eventualSafeNodes(V, adj);
+
+	for (auto node : safeNodes) {
+		cout << node << " ";
+	}
+	cout << endl;
+
+	return 0;
+}
+```
+**Time Complexity:** O(V+E)+O(N*logN), where V = no. of nodes and E = no. of edges. This is a simple BFS algorithm. Extra O(N*logN) for sorting the safeNodes array, where N is the number of safe nodes.
+
+**Space Complexity:** O(N) + O(N) + O(N) ~ O(3N), O(N) for the indegree array, O(N) for the queue data structure used in BFS(where N = no.of nodes), and extra O(N) for the adjacency list to store the graph in a reversed order.
 
 # Bridges
 
