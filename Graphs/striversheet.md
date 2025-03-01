@@ -1270,4 +1270,406 @@ int main() {
 
 **Time Complexity:** O(N+E) + O(E*4ɑ) + O(N*(ElogE + E)) where N = no. of indices or nodes and E = no. of emails. The first term is for visiting all the emails. The second term is for merging the accounts. And the third term is for sorting the emails and storing them in the answer array.
 
-**Space Complexity:** O(N)+ O(N) +O(2N) ~ O(N) where N = no. of nodes/indices. The first and second space is for the ‘mergedMail’ and the ‘ans’ array. The last term is for the parent and size array used inside the Disjoint set data structure.
+**Space Complexity:** O(N)+ O(N) +O(2N) ~ O(N) where N = no. of nodes/indices. The first and second space is for the ‘mergedMail’ and the ‘ans’ array. The last term is for the parent and size array used inside the Disjoint set data structure.  
+
+# No. of Islands ii
+You are given an n, m which means the row and column of the 2D matrix, and an array of size k denoting the number of operations. Matrix elements are 0 if there is water or 1 if there is land. Originally, the 2D matrix is all 0 which means there is no land in the matrix. The array has k operator(s) and each operator has two integers A[i][0], A[i][1] means that you can change the cell matrix[A[i][0]][A[i][1]] from sea to island. Return how many islands are there in the matrix after each operation. You need to return an array of size k.  
+
+**Intuition**
+whenever u get 1 increment count and check if adjacent nodes are connected or not. If they are not, decrement answer by 1 and union them
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+// User function Template for C++
+class DisjointSet {
+    vector<int> rank, parent, size;
+public:
+    DisjointSet(int n) {
+        rank.resize(n + 1, 0);
+        parent.resize(n + 1);
+        size.resize(n + 1);
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] < rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] < rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] < size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};
+class Solution {
+private:
+    bool isValid(int adjr, int adjc, int n, int m) {
+        return adjr >= 0 && adjr < n && adjc >= 0 && adjc < m;
+    }
+public:
+    vector<int> numOfIslands(int n, int m,
+                             vector<vector<int>> &operators) {
+        DisjointSet ds(n * m);
+        int vis[n][m];
+        memset(vis, 0, sizeof vis);
+        int cnt = 0;
+        vector<int> ans;
+        for (auto it : operators) {
+            int row = it[0];
+            int col = it[1];
+            if (vis[row][col] == 1) {
+                ans.push_back(cnt);
+                continue;
+            }
+            vis[row][col] = 1;
+            cnt++;
+            // row - 1, col
+            // row , col + 1
+            // row + 1, col
+            // row, col - 1;
+            int dr[] = { -1, 0, 1, 0};
+            int dc[] = {0, 1, 0, -1};
+            for (int ind = 0; ind < 4; ind++) {
+                int adjr = row + dr[ind];
+                int adjc = col + dc[ind];
+                if (isValid(adjr, adjc, n, m)) {
+                    if (vis[adjr][adjc] == 1) {
+                        int nodeNo = row * m + col;
+                        int adjNodeNo = adjr * m + adjc;
+                        if (ds.findUPar(nodeNo) != ds.findUPar(adjNodeNo)) {
+                            cnt--;
+                            ds.unionBySize(nodeNo, adjNodeNo);
+                        }
+                    }
+                }
+            }
+            ans.push_back(cnt);
+        }
+        return ans;
+    }
+};
+
+
+
+int main() {
+
+    int n = 4, m = 5;
+    vector<vector<int>> operators = {{0, 0}, {0, 0}, {1, 1}, {1, 0}, {0, 1},
+        {0, 3}, {1, 3}, {0, 4}, {3, 2}, {2, 2}, {1, 2}, {0, 2}
+    };
+
+
+    Solution obj;
+    vector<int> ans = obj.numOfIslands(n, m, operators);
+    for (auto res : ans) {
+        cout << res << " ";
+    }
+    cout << endl;
+    return 0;
+}
+```
+**Time Complexity**: O(Q*4α) ~ O(Q) where Q = no. of queries. The term 4α is so small that it can be considered constant.
+
+**Space Complexity**: O(Q) + O(N*M) + O(N*M), where Q = no. of queries, N = total no. of rows, M = total no. of columns. The last two terms are for the parent and the size array used inside the Disjoint set data structure. The first term is to store the answer.  
+
+# Making a large island
+
+You are given an n x n binary grid. A grid is said to be binary if every value in the grid is either 1 or 0. You can change at most one cell in the grid from 0 to 1. You need to find the largest group of connected  1's. Two cells are said to be connected if both are adjacent to each other and both have the same value.  
+
+**Intuition**
+The algorithm steps are as follows (step 3 is very important):  
+
+- Our first objective is to connect all the nodes that have formed groups. In order to do so, we will visit each cell of the grid and check if it contains the value 1.
+- If the value is 1, we will check all four adjacent cells of the current cell. If we find any adjacent cell with the same value 1, we will perform the union(either unionBySize() or unionByRank()) of the two node numbers that represent those two cells i.e. the current cell and the adjacent cell.
+Now, step 1 is completed.  
+- Then, we will again visit each cell of the grid and check if it contains the value 0.
+- If the value is 0, we will check all four adjacent cells of the current cell. If we found any cell with value 1, we will just insert the ultimate parent of that cell(using the findUPar() method) in the set data structure. This process will add the adjacent components to our answer.
+- After doing so for all the adjacent cells containing 1, we will iterate through the set data structure and add the size of each ultimate parent(referring to the size array inside the Disjoint Set data structure) to our answer. Finally, we will add an extra 1 to our answer for the current cell being included in the group.
+- Now, we will compare to get the maximum answer among all the previous answers we got for the previous cells with the value 0 and the current one.
+- But if the matrix does not contain any cell with 0, step 2 will not be executed. For that reason, we will just run a loop from node number 0 to n*n and for each node number, we will find the ultimate parent. After that, we will find the sizes of those ultimate parents and will take the size of the largest one.
+Thus we will get the maximum size of the group of connected 1s stored in our answer.  
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+// User function Template for C++
+class DisjointSet {
+
+public:
+    vector<int> rank, parent, size;
+    DisjointSet(int n) {
+        rank.resize(n + 1, 0);
+        parent.resize(n + 1);
+        size.resize(n + 1);
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] < rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] < rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] < size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};
+class Solution {
+private:
+    bool isValid(int newr, int newc, int n) {
+        return newr >= 0 && newr < n && newc >= 0 && newc < n;
+    }
+public:
+    int MaxConnection(vector<vector<int>>& grid) {
+        int n = grid.size();
+        DisjointSet ds(n * n);
+        // step - 1
+        for (int row = 0; row < n ; row++) {
+            for (int col = 0; col < n ; col++) {
+                if (grid[row][col] == 0) continue;
+                int dr[] = { -1, 0, 1, 0};
+                int dc[] = {0, -1, 0, 1};
+                for (int ind = 0; ind < 4; ind++) {
+                    int newr = row + dr[ind];
+                    int newc = col + dc[ind];
+                    if (isValid(newr, newc, n) && grid[newr][newc] == 1) {
+                        int nodeNo = row * n + col;
+                        int adjNodeNo = newr * n + newc;
+                        ds.unionBySize(nodeNo, adjNodeNo);
+                    }
+                }
+            }
+        }
+        // step 2
+        int mx = 0;
+        for (int row = 0; row < n; row++) {
+            for (int col = 0; col < n; col++) {
+                if (grid[row][col] == 1) continue;
+                int dr[] = { -1, 0, 1, 0};
+                int dc[] = {0, -1, 0, 1};
+                set<int> components;
+                for (int ind = 0; ind < 4; ind++) {
+                    int newr = row + dr[ind];
+                    int newc = col + dc[ind];
+                    if (isValid(newr, newc, n)) {
+                        if (grid[newr][newc] == 1) {
+                            components.insert(ds.findUPar(newr * n + newc));
+                        }
+                    }
+                }
+                int sizeTotal = 0;
+                for (auto it : components) {
+                    sizeTotal += ds.size[it];
+                }
+                mx = max(mx, sizeTotal + 1);
+            }
+        }
+        for (int cellNo = 0; cellNo < n * n; cellNo++) {
+            mx = max(mx, ds.size[ds.findUPar(cellNo)]);
+        }
+        return mx;
+    }
+};
+
+
+int main() {
+
+    vector<vector<int>> grid = {
+        {1, 1, 0, 1, 1, 0}, {1, 1, 0, 1, 1, 0},
+        {1, 1, 0, 1, 1, 0}, {0, 0, 1, 0, 0, 0},
+        {0, 0, 1, 1, 1, 0}, {0, 0, 1, 1, 1, 0}
+    };
+
+    Solution obj;
+    int ans = obj.MaxConnection(grid);
+    cout << "The largest group of connected 1s is of size: " << ans << endl;
+    return 0;
+}
+```
+
+**Time Complexity:** O(N2)+O(N2) ~ O(N2) where N = total number of rows of the grid. Inside those nested loops, all the operations are taking apparently constant time. So, O(N2) for the nested loop only, is the time complexity.  
+
+**Space Complexity:** O(2*N2) where N = the total number of rows of the grid. This is for the two arrays i.e. parent array and size array of size N2 inside the Disjoint set.  
+
+# Most Stones Removed with Same Row or Column
+There are n stones at some integer coordinate points on a 2D plane. Each coordinate point may have at most one stone. 
+
+You need to remove some stones.  
+
+A stone can be removed if it shares either the same row or the same column as another stone that has not been removed. 
+
+Given an array of stones of length n where stones[i] = [xi, yi] represents the location of the ith stone, return the maximum possible number of stones that you can remove. 
+
+**Intuition**
+Intuition is very simple. In one connected component, u can remove all except the last one. so in every connect component one node would be left off.
+so the answer is no of nodes  - no of connected components 
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+
+class DisjointSet {
+    vector<int> rank, parent, size;
+public:
+    DisjointSet(int n) {
+        rank.resize(n + 1, 0);
+        parent.resize(n + 1);
+        size.resize(n + 1);
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] < rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] < rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] < size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};
+class Solution {
+public:
+    int maxRemove(vector<vector<int>>& stones, int n) {
+        int maxRow = 0;
+        int maxCol = 0;
+        for (auto it : stones) {
+            maxRow = max(maxRow, it[0]);
+            maxCol = max(maxCol, it[1]);
+        }
+        DisjointSet ds(maxRow + maxCol + 1);
+        unordered_map<int, int> stoneNodes;
+        for (auto it : stones) {
+            int nodeRow = it[0];
+            int nodeCol = it[1] + maxRow + 1;
+            ds.unionBySize(nodeRow, nodeCol);
+            stoneNodes[nodeRow] = 1;
+            stoneNodes[nodeCol] = 1;
+        }
+
+        int cnt = 0;
+        for (auto it : stoneNodes) {
+            if (ds.findUPar(it.first) == it.first) {
+                cnt++;
+            }
+        }
+        return n - cnt;
+    }
+};
+
+int main() {
+
+    int n = 6;
+    vector<vector<int>> stones = {
+        {0, 0}, {0, 2},
+        {1, 3}, {3, 1},
+        {3, 2}, {4, 3}
+    };
+
+    Solution obj;
+    int ans = obj.maxRemove(stones, n);
+    cout << "The maximum number of stones we can remove is: " << ans << endl;
+    return 0;
+}
+```
+
+**Time Complexity:** O(N), where N = total no. of stones. Here we have just traversed the given stones array several times. And inside those loops, every operation is apparently taking constant time. So, the time complexity is only the time of traversal of the array.
+
+**Space Complexity:** O(2* (max row index + max column index)) for the parent and size array inside the Disjoint Set data structure.
+
+# Strongly connected components
+
+# Bridges
+
+# Articulation points
