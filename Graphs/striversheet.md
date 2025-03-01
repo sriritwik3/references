@@ -2441,9 +2441,1390 @@ int main() {
 	return 0;
 }
 ```
-**Time Complexity:** O(V+E)+O(N*logN), where V = no. of nodes and E = no. of edges. This is a simple BFS algorithm. Extra O(N*logN) for sorting the safeNodes array, where N is the number of safe nodes.
+**Time Complexity:** O(V+E)+O(N*logN), where V = no. of nodes and E = no. of edges. This is a simple BFS algorithm. Extra O(N*logN) for sorting the safeNodes array, where N is the number of safe nodes.  
 
-**Space Complexity:** O(N) + O(N) + O(N) ~ O(3N), O(N) for the indegree array, O(N) for the queue data structure used in BFS(where N = no.of nodes), and extra O(N) for the adjacency list to store the graph in a reversed order.
+**Space Complexity:** O(N) + O(N) + O(N) ~ O(3N), O(N) for the indegree array, O(N) for the queue data structure used in BFS(where N = no.of nodes), and extra O(N) for the adjacency list to store the graph in a reversed order.  
+
+# Course schedule - 1, II
+There are a total of n tasks you have to pick, labeled from 0 to n-1. Some tasks may have prerequisites tasks, for example, to pick task 0 you have to first finish tasks 1, which is expressed as a pair: [0, 1]  
+
+Given the total number of n tasks and a list of prerequisite pairs of size m. Find the order of tasks you should pick to finish all tasks.  
+
+Note: There may be multiple correct orders, you need to return one of them. If it is impossible to finish all tasks, return an empty array.  
+
+**INTUITION**  
+The algorithm steps are as follows:  
+
+- First, we will form the adjacency list of the graph using the pairs. For example, for the pair {u, v} we will add node v as an adjacent node of u in the list.
+- Then, we will calculate the in-degree of each node and store it in the indegree array. We can iterate through the given adj list, and simply for every node u->v, we can increase the indegree of v by 1 in the indegree array. 
+- Initially, there will be always at least a single node whose indegree is 0. So, we will push the node(s) with indegree 0 into the queue.
+- Then, we will pop a node from the queue including the node in our answer array, and for all its adjacent nodes, we will decrease the indegree of that node by one. For example, if node u that has been popped out from the queue has an edge towards node v(u->v), we will decrease indegree[v] by 1.
+- After that, if for any node the indegree becomes 0, we will push that node again into the queue.
+- We will repeat steps 3 and 4 until the queue is completely empty. Now, completing the BFS we will get the linear ordering of the nodes in the answer array.
+- For the first problem(Course Schedule): We will return the answer array if the length of the ordering equals the number of tasks. Otherwise, we will return an empty array.
+- For the Second problem(Prerequisite tasks): We will return true if the length of the ordering equals the number of tasks. otherwise, we will return false.
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+
+class Solution
+{
+public:
+	vector<int> findOrder(int V, int m, vector<vector<int>> prerequisites)
+	{
+		vector<int> adj[V];
+		for (auto it : prerequisites) {
+			adj[it[1]].push_back(it[0]);
+		}
+
+
+
+		int indegree[V] = {0};
+		for (int i = 0; i < V; i++) {
+			for (auto it : adj[i]) {
+				indegree[it]++;
+			}
+		}
+
+		queue<int> q;
+		for (int i = 0; i < V; i++) {
+			if (indegree[i] == 0) {
+				q.push(i);
+			}
+		}
+		vector<int> topo;
+		while (!q.empty()) {
+			int node = q.front();
+			q.pop();
+			topo.push_back(node);
+			// node is in your topo sort
+			// so please remove it from the indegree
+
+			for (auto it : adj[node]) {
+				indegree[it]--;
+				if (indegree[it] == 0) q.push(it);
+			}
+		}
+
+		if (topo.size() == V) return topo;
+		return {};
+	}
+};
+
+
+int main() {
+
+	int N = 4;
+	int M = 3;
+
+	vector<vector<int>> prerequisites(3);
+	prerequisites[0].push_back(0);
+	prerequisites[0].push_back(1);
+
+	prerequisites[1].push_back(1);
+	prerequisites[1].push_back(2);
+
+	prerequisites[2].push_back(2);
+	prerequisites[2].push_back(3);
+
+	Solution obj;
+	vector<int> ans = obj.findOrder(N, M, prerequisites);
+
+	for (auto task : ans) {
+		cout << task << " ";
+	}
+	cout << endl;
+	return 0;
+}
+```
+
+```
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+	bool isPossible(int V, vector<pair<int, int> >& prerequisites) {
+		vector<int> adj[V];
+		for (auto it : prerequisites) {
+			adj[it.first].push_back(it.second);
+		}
+
+
+
+		int indegree[V] = {0};
+		for (int i = 0; i < V; i++) {
+			for (auto it : adj[i]) {
+				indegree[it]++;
+			}
+		}
+
+		queue<int> q;
+		for (int i = 0; i < V; i++) {
+			if (indegree[i] == 0) {
+				q.push(i);
+			}
+		}
+		vector<int> topo;
+		while (!q.empty()) {
+			int node = q.front();
+			q.pop();
+			topo.push_back(node);
+			// node is in your topo sort
+			// so please remove it from the indegree
+
+			for (auto it : adj[node]) {
+				indegree[it]--;
+				if (indegree[it] == 0) q.push(it);
+			}
+		}
+
+		if (topo.size() == V) return true;
+		return false;
+
+
+	}
+};
+
+int main() {
+
+	vector<pair<int, int>> prerequisites;
+	int N = 4;
+	prerequisites.push_back({1, 0});
+	prerequisites.push_back({2, 1});
+	prerequisites.push_back({3, 2});
+
+	Solution obj;
+	bool ans = obj.isPossible(N, prerequisites);
+
+	if (ans) cout << "YES";
+	else cout << "NO";
+	cout << endl;
+
+	return 0;
+}
+```
+
+**Time Complexity:** O(V+E), where V = no. of nodes and E = no. of edges. This is a simple BFS algorithm.  
+
+**Space Complexity:** O(N) + O(N) ~ O(2N), O(N) for the indegree array, and O(N) for the queue data structure used in BFS(where N = no.of nodes). Extra O(N) for storing the topological sorting. Total ~ O(3N).  
+
+# Alien dictionary
+Given a sorted dictionary of an alien language having N words and k starting alphabets of a standard dictionary. Find the order of characters in the alien language.  
+
+Note: Many orders may be possible for a particular test case, thus you may return any valid order.  
+Input: N = 5, K = 4  
+dict = {"baa","abcd","abca","cab","cad"}  
+Output: b d a c  
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+
+
+class Solution {
+	// works for multiple components
+private:
+	vector<int> topoSort(int V, vector<int> adj[])
+	{
+		int indegree[V] = {0};
+		for (int i = 0; i < V; i++) {
+			for (auto it : adj[i]) {
+				indegree[it]++;
+			}
+		}
+
+		queue<int> q;
+		for (int i = 0; i < V; i++) {
+			if (indegree[i] == 0) {
+				q.push(i);
+			}
+		}
+		vector<int> topo;
+		while (!q.empty()) {
+			int node = q.front();
+			q.pop();
+			topo.push_back(node);
+			// node is in your topo sort
+			// so please remove it from the indegree
+
+			for (auto it : adj[node]) {
+				indegree[it]--;
+				if (indegree[it] == 0) q.push(it);
+			}
+		}
+
+		return topo;
+	}
+public:
+	string findOrder(string dict[], int N, int K) {
+		vector<int>adj[K];
+		for (int i = 0; i < N - 1; i++) {
+			string s1 = dict[i];
+			string s2 = dict[i + 1];
+			int len = min(s1.size(), s2.size());
+			for (int ptr = 0; ptr < len; ptr++) {
+				if (s1[ptr] != s2[ptr]) {
+					adj[s1[ptr] - 'a'].push_back(s2[ptr] - 'a');
+					break;
+				}
+			}
+		}
+
+		vector<int> topo = topoSort(K, adj);
+		string ans = "";
+		for (auto it : topo) {
+			ans = ans + char(it + 'a');
+		}
+		return ans;
+	}
+};
+
+int main() {
+
+	int N = 5, K = 4;
+	string dict[] = {"baa", "abcd", "abca", "cab", "cad"};
+	Solution obj;
+	string ans = obj.findOrder(dict, N, K);
+
+	for (auto ch : ans)
+		cout << ch << ' ';
+	cout << endl;
+
+	return 0;
+}
+```
+**Time Complexity:** O(N*len)+O(K+E), where N is the number of words in the dictionary, ‘len’ is the length up to the index where the first inequality occurs, K = no. of nodes, and E = no. of edges.  
+
+**Space Complexity:** O(K) + O(K)+O(K)+O(K) ~ O(4K), O(K) for the indegree array, and O(K) for the queue data structure used in BFS(where K = no.of nodes), O(K) for the answer array and O(K) for the adjacency list used in the algorithm.  
+
+# Shortest path in directed acyclic graph 
+Given a DAG, find the shortest path from the source to all other nodes in this DAG. In this problem statement, we have assumed the source vertex to be ‘0’. You will be given the weighted edges of the graph.  
+
+**Intuition**  
+The shortest path in a directed acyclic graph can be calculated by the following steps:  
+We are doing toposort because before finding answer for u, we find answer for all nodes which are reached before we reach u
+
+- Perform topological sort on the graph using BFS/DFS and store it in a stack. In order to get a hang of how the Topological Sort works, you can refer to this article for the same. 
+- Now, iterate on the topo sort. We can keep the generated topo sort in the stack only, and do an iteration on it, it reduces the extra space which would have been required to store it. Make sure for the source node, we will assign dist[src] = 0. 
+- For every node that comes out of the stack which contains our topo sort, we can traverse for all its adjacent nodes, and relax them. 
+- In order to relax them, we simply do a simple comparison of dist[node] + wt and dist[adjNode]. Here dist[node] means the distance taken to reach the current node, and it is the edge weight between the node and the adjNode. 
+- If (dist[node] + wt < dist[adjNode]), then we will go ahead and update the distance of the dist[adjNode] to the new found better path. 
+- Once all the nodes have been iterated, the dist[] array will store the shortest paths and we can then return it.
+
+```cpp
+#include<bits/stdc++.h>
+
+using namespace std;
+
+class Solution {
+  private:
+    void topoSort(int node, vector < pair < int, int >> adj[],
+      int vis[], stack < int > & st) {
+      //This is the function to implement Topological sort. 
+      vis[node] = 1;
+      for (auto it: adj[node]) {
+        int v = it.first;
+        if (!vis[v]) {
+          topoSort(v, adj, vis, st);
+        }
+      }
+      st.push(node);
+    }
+  public:
+    vector < int > shortestPath(int N, int M, vector < vector < int >> & edges) {
+
+      //We create a graph first in the form of an adjacency list.
+      vector < pair < int, int >> adj[N];
+      for (int i = 0; i < M; i++) {
+        int u = edges[i][0];
+        int v = edges[i][1];
+        int wt = edges[i][2];
+        adj[u].push_back({v, wt}); 
+      }
+      // A visited array is created with initially 
+      // all the nodes marked as unvisited (0).
+      int vis[N] = {
+        0
+      };
+      //Now, we perform topo sort using DFS technique 
+      //and store the result in the stack st.
+      stack < int > st;
+      for (int i = 0; i < N; i++) {
+        if (!vis[i]) {
+          topoSort(i, adj, vis, st);
+        }
+      }
+      //Further, we declare a vector ‘dist’ in which we update the value of the nodes’
+      //distance from the source vertex after relaxation of a particular node.
+
+      vector < int > dist(N);
+      for (int i = 0; i < N; i++) {
+        dist[i] = 1e9;
+      }
+
+      dist[0] = 0;
+      while (!st.empty()) {
+        int node = st.top();
+        st.pop();
+
+        for (auto it: adj[node]) {
+          int v = it.first;
+          int wt = it.second;
+
+          if (dist[node] + wt < dist[v]) {
+            dist[v] = wt + dist[node];
+          }
+        }
+      }
+
+      for (int i = 0; i < N; i++) {
+        if (dist[i] == 1e9) dist[i] = -1;
+      }
+      return dist;
+    }
+};
+
+int main() {
+
+  int N = 6, M = 7;
+  
+  vector<vector<int>> edges= {{0,1,2},{0,4,1},{4,5,4},{4,2,2},{1,2,3},{2,3,6},{5,3,1}};
+  Solution obj;
+  vector < int > ans = obj.shortestPath(N, M, edges);
+
+  for (int i = 0; i < ans.size(); i++) {
+
+    cout << ans[i] << " ";
+  }
+
+  return 0;
+
+}
+```
+
+**Time Complexity:** O(N+M) {for the topological sort} + O(N+M) {for relaxation of vertices, each node and its adjacent nodes get traversed} ~ O(N+M).  
+
+Where N= number of vertices and M= number of edges.  
+
+**Space Complexity:**  O( N) {for the stack storing the topological sort} + O(N) {for storing the shortest distance for each node} + O(N) {for the visited array} + O( N+2M) {for the adjacency list} ~ O(N+M) .  
+
+Where N= number of vertices and M= number of edges.  
+
+# Shortest Path in Undirected Graph with unit distance  
+```cpp
+#include<bits/stdc++.h>
+using namespace std;
+
+class Solution {
+  public:
+    vector<int> shortestPath(vector<vector<int>>& edges, int N,int M, int src){
+    //Create an adjacency list of size N for storing the undirected graph.
+        vector<int> adj[N]; 
+        for(auto it : edges) {
+            adj[it[0]].push_back(it[1]); 
+            adj[it[1]].push_back(it[0]); 
+        }
+
+        //A dist array of size N initialised with a large number to 
+        //indicate that initially all the nodes are untraversed.    
+    
+        int dist[N];
+        for(int i = 0;i<N;i++) dist[i] = 1e9;
+        // BFS Implementation.
+        dist[src] = 0; 
+        queue<int> q;
+        q.push(src); 
+        while(!q.empty()) {
+            int node = q.front(); 
+            q.pop(); 
+            for(auto it : adj[node]) {
+                if(dist[node] + 1 < dist[it]) {
+                    dist[it] = 1 + dist[node]; 
+                    q.push(it); 
+                }
+            }
+        }
+        // Updated shortest distances are stored in the resultant array ‘ans’.
+        // Unreachable nodes are marked as -1. 
+        vector<int> ans(N, -1);
+        for(int i = 0;i<N;i++) {
+            if(dist[i] != 1e9) {
+                ans[i] = dist[i]; 
+            }
+        }
+        return ans; 
+    }
+};
+
+int main(){
+
+int N=9, M=10;
+vector<vector<int>> edges= {{0,1},{0,3},{3,4},{4,5},{5,6},{1,2},{2,6},{6,7},{7,8},{6,8}};
+
+Solution obj;
+vector<int> ans = obj.shortestPath(edges,N,M,0);
+
+for(int i=0;i<ans.size();i++){
+    
+    cout<<ans[i]<<" ";
+}
+
+return 0;
+}
+```
+**Time Complexity:** O(M) { for creating the adjacency list from given list ‘edges’} + O(N + 2M) { for the BFS Algorithm} + O(N) { for adding the final values of the shortest path in the resultant array} ~ O(N+2M).   
+
+Where N= number of vertices and M= number of edges.  
+
+**Space Complexity:**  O( N) {for the stack storing the BFS} + O(N) {for the resultant array} + O(N) {for the dist array storing updated shortest paths} + O( N+2M) {for the adjacency list} ~ O(N+M) .  
+
+Where N= number of vertices and M= number of edges.  
+
+# Word ladder 1 
+Given are the two distinct words startWord and targetWord, and a list denoting wordList of unique words of equal lengths. Find the length of the shortest transformation sequence from startWord to targetWord.  
+
+In this problem statement, we need to keep the following conditions in mind:  
+
+A word can only consist of lowercase characters.  
+Only one letter can be changed in each transformation.  
+Each transformed word must exist in the wordList including the targetWord.  
+startWord may or may not be part of the wordList  
+Note:  If there’s no possible way to transform the sequence from startWord to targetWord return 0.  
+
+**intuition**  
+The intuition behind using the BFS traversal technique for this particular problem is that if we notice carefully, we go on replacing the characters one by one which seems just like we’re moving level-wise in order to reach the destination i.e. the targetWord.  
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+ 
+class Solution
+{
+public:
+    int wordLadderLength(string startWord, string targetWord,
+                         vector<string> &wordList)
+    {
+    // Creating a queue ds of type {word,transitions to reach ‘word’}.
+        queue<pair<string, int>> q;
+
+        // BFS traversal with pushing values in queue 
+        // when after a transformation, a word is found in wordList.
+        q.push({startWord, 1});
+
+        // Push all values of wordList into a set
+        // to make deletion from it easier and in less time complexity.
+        unordered_set<string> st(wordList.begin(), wordList.end());
+        st.erase(startWord);
+        while (!q.empty())
+        {
+            string word = q.front().first;
+            int steps = q.front().second;
+            q.pop();
+
+            // we return the steps as soon as
+            // the first occurence of targetWord is found.
+            if (word == targetWord)
+                return steps;
+
+            for (int i = 0; i < word.size(); i++)
+            {
+                // Now, replace each character of ‘word’ with char
+                // from a-z then check if ‘word’ exists in wordList.
+                char original = word[i];
+                for (char ch = 'a'; ch <= 'z'; ch++)
+                {
+                    word[i] = ch;
+                    // check if it exists in the set and push it in the queue.
+                    if (st.find(word) != st.end())
+                    {
+                        st.erase(word);
+                        q.push({word, steps + 1});
+                    }
+                }
+                word[i] = original;
+            }
+        }
+        // If there is no transformation sequence possible
+        return 0;
+    }
+};
+ 
+int main()
+{
+ 
+    vector<string> wordList = {"des", "der", "dfr", "dgt", "dfs"};
+    string startWord = "der", targetWord = "dfs";
+ 
+    Solution obj;
+ 
+    int ans = obj.wordLadderLength(startWord, targetWord, wordList);
+ 
+    cout << ans;
+    cout << endl;
+    return 0;
+}
+```
+**Time Complexity:** O(N * M * 26)  
+
+Where N = size of wordList Array and M = word length of words present in the wordList..  
+
+Note that, hashing operations in an unordered set takes O(1) time, but if you want to use set here, then the time complexity would increase by a factor of log(N) as hashing operations in a set take O(log(N)) time.  
+
+**Space Complexity:**  O( N ) { for creating an unordered set and copying all values from wordList into it }  
+
+Where N = size of wordList Array.  
+
+# Word ladder 2  
+Given two distinct words startWord and targetWord, and a list denoting wordList of unique words of equal lengths. Find all shortest transformation sequence(s) from startWord to targetWord. You can return them in any order possible.  
+
+In this problem statement, we need to keep the following conditions in mind:  
+
+A word can only consist of lowercase characters.  
+Only one letter can be changed in each transformation.  
+Each transformed word must exist in the wordList including the targetWord.  
+startWord may or may not be part of the wordList.  
+Return an empty list if there is no such transformation sequence.  
+
+**Approach**  
+The Algorithm for this problem involves the following steps:  
+
+- Firstly, we start by creating a hash set to store all the elements present in the wordList which would make the search and delete operations faster for us to implement.
+- Next, we create a Queue data structure for storing the successive sequences/ path in the form of a vector which on transformation would lead us to the target word.
+- Now, we add the startWord to the queue as a List and also push it into the usedOnLevel vector to denote that this word is currently being used for transformation in this particular level.
+- Pop the first element out of the queue and carry out the BFS traversal, where for each word that popped out from the back of the sequence present at the top of the queue, we check for all of its characters by replacing them with ‘a’ - ‘z’ if they are present in the wordList or not. In case a word is present in the wordList, we simply first push it onto the usedOnLevel vector and do not delete it from the wordList immediately.
+- Now, push that word into the vector containing the previous sequence and add it to the queue. So we will get a new path, but we need to explore other paths as well, so pop the word out of the list to explore other paths.
+- After completion of traversal on a particular level, we can now delete all the words that were currently being used on that level from the usedOnLevel vector which ensures that these words won’t be used again in the future, as using them in the later stages will mean that it won’t be the shortest path anymore.
+- If at any point in time we find out that the last word in the sequence present at the top of the queue is equal to the target word, we simply push the sequence into the resultant vector if the resultant vector ‘ans’ is empty.
+- If the vector is not empty, we check if the current sequence length is equal to the first element added in the ans vector or not. This has to be checked because we need the shortest possible transformation sequences.
+- In case, there is no transformation sequence possible, we return an empty 2D vector.
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution
+{
+public:
+    vector<vector<string>> findSequences(string beginWord, string endWord,
+                                         vector<string> &wordList)
+    {
+        // Push all values of wordList into a set
+        // to make deletion from it easier and in less time complexity.
+        unordered_set<string> st(wordList.begin(), wordList.end());
+        
+        // Creating a queue ds which stores the words in a sequence which is
+        // required to reach the targetWord after successive transformations.
+        queue<vector<string>> q;
+
+        // BFS traversal with pushing the new formed sequence in queue 
+        // when after a transformation, a word is found in wordList.
+
+        q.push({beginWord});
+
+        // A vector defined to store the words being currently used
+        // on a level during BFS.
+        vector<string> usedOnLevel;
+        usedOnLevel.push_back(beginWord);
+        int level = 0;
+       
+        // A vector to store the resultant transformation sequence.
+        vector<vector<string>> ans;
+        while (!q.empty())
+        {
+            vector<string> vec = q.front();
+            q.pop();
+
+            // Now, erase all words that have been
+            // used in the previous levels to transform
+            if (vec.size() > level)
+            {
+                level++;
+                for (auto it : usedOnLevel)
+                {
+                    st.erase(it);
+                }
+            }
+
+            string word = vec.back();
+
+            // store the answers if the end word matches with targetWord.
+            if (word == endWord)
+            {
+                // the first sequence where we reached end
+                if (ans.size() == 0)
+                {
+                    ans.push_back(vec);
+                }
+                else if (ans[0].size() == vec.size())
+                {
+                    ans.push_back(vec);
+                }
+            }
+            for (int i = 0; i < word.size(); i++)
+            {   
+                // Now, replace each character of ‘word’ with char
+                // from a-z then check if ‘word’ exists in wordList.
+                char original = word[i];
+                for (char c = 'a'; c <= 'z'; c++)
+                {
+                    word[i] = c;
+                    if (st.count(word) > 0)
+                    { 
+                        // Check if the word is present in the wordList and
+                        // push the word along with the new sequence in the queue.
+                        vec.push_back(word);
+                        q.push(vec);
+                        // mark as visited on the level
+                        usedOnLevel.push_back(word);
+                        vec.pop_back();
+                    }
+                }
+                word[i] = original;
+            }
+        }
+        return ans;
+    }
+};
+
+// A comparator function to sort the answer.
+bool comp(vector<string> a, vector<string> b)
+{
+    string x = "", y = "";
+    for (string i : a)
+        x += i;
+    for (string i : b)
+        y += i;
+
+    return x < y;
+}
+
+int main()
+{
+
+    vector<string> wordList = {"des", "der", "dfr", "dgt", "dfs"};
+    string startWord = "der", targetWord = "dfs";
+    Solution obj;
+    vector<vector<string>> ans = obj.findSequences(startWord, targetWord, wordList);
+    
+    // If no transformation sequence is possible.
+    if (ans.size() == 0)
+        cout << -1 << endl;
+    else
+    {
+        sort(ans.begin(), ans.end(), comp);
+        for (int i = 0; i < ans.size(); i++)
+        {
+            for (int j = 0; j < ans[i].size(); j++)
+            {
+                cout << ans[i][j] << " ";
+            }
+            cout << endl;
+        }
+    }
+
+    return 0;
+}
+```
+Time Complexity and Space Complexity: It cannot be predicted for this particular algorithm because there can be multiple sequences of transformation from startWord to targetWord depending upon the example, so we cannot define a fixed range of time or space in which this program would run for all the test cases.  
+
+# Dijkstra - time complexity derivation  
+- O( V * ( pop vertex from min heap + no. of edges on each vertex * push in PQ ))
+- O( V * ( log(heapSize) + no. of edges * log(heapSize))
+- O( V * (log(heapSize) + V-1 * log(heapSize))    { one vertex can have V-1 edges }
+- O( V * (log(heapSize) * (V-1+1))
+- O( V * V * log(heapSize))
+- Now, at the worst case the heapSize will be equivalent to v² as if we consider pushing adjacent elements of a node, at the worst case each element will have V-1 nodes and they will be pushed onto the queue.  
+- O( V * V * log(v²))
+- O ( v² * 2 log (V))
+- O ( E * 2 log(V))  { E= v², total number of edges}
+- O ( E * log(V))  Worst case Time Complexity of Dijkstra’s Algorithm.
+
+# Print Shortest Path - Dijkstra’s Algorithm
+You are given a weighted undirected graph having n+1 vertices numbered from 0 to n and m edges describing there are edges between a to b with some weight, find the shortest path between the vertex 1 and the vertex n, and if the path does not exist then return a list consisting of only -1.  
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution
+{
+public:
+    vector<int> shortestPath(int n, int m, vector<vector<int>> &edges)
+    {
+        // Create an adjacency list of pairs of the form node1 -> {node2, edge weight}
+        // where the edge weight is the weight of the edge from node1 to node2.
+        vector<pair<int, int>> adj[n + 1];
+        for (auto it : edges)
+        {
+            adj[it[0]].push_back({it[1], it[2]});
+            adj[it[1]].push_back({it[0], it[2]});
+        }
+        // Create a priority queue for storing the nodes along with distances 
+        // in the form of a pair { dist, node }.
+        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int,int>>> pq;
+
+        // Create a dist array for storing the updated distances and a parent array
+        //for storing the nodes from where the current nodes represented by indices of
+        // the parent array came from.
+        vector<int> dist(n + 1, 1e9), parent(n + 1);
+        for (int i = 1; i <= n; i++)
+            parent[i] = i;
+
+        dist[1] = 0;
+
+        // Push the source node to the queue.
+        pq.push({0, 1});
+        while (!pq.empty())
+        {
+            // Topmost element of the priority queue is with minimum distance value.
+            auto it = pq.top();
+            pq.pop();
+            int node = it.second;
+            int dis = it.first;
+
+            // Iterate through the adjacent nodes of the current popped node.
+            for (auto it : adj[node])
+            {
+                int adjNode = it.first;
+                int edW = it.second;
+
+                // Check if the previously stored distance value is 
+                // greater than the current computed value or not, 
+                // if yes then update the distance value.
+                if (dis + edW < dist[adjNode])
+                {
+                    dist[adjNode] = dis + edW;
+                    pq.push({dis + edW, adjNode});
+
+                    // Update the parent of the adjNode to the recent 
+                    // node where it came from.
+                    parent[adjNode] = node;
+                }
+            }
+        }
+
+        // If distance to a node could not be found, return an array containing -1.
+        if (dist[n] == 1e9)
+            return {-1};
+
+        // Store the final path in the ‘path’ array.
+        vector<int> path;
+        int node = n;
+
+        // Iterate backwards from destination to source through the parent array.
+        while (parent[node] != node)
+        {
+            path.push_back(node);
+            node = parent[node];
+        }
+        path.push_back(1);
+
+        // Since the path stored is in a reverse order, we reverse the array
+        // to get the final answer and then return the array.
+        reverse(path.begin(), path.end());
+        return path;
+    }
+};
+
+int main()
+{
+    // Driver Code
+
+    int V = 5, E = 6;
+    vector<vector<int>> edges = {{1, 2, 2}, {2, 5, 5}, {2, 3, 4}, {1, 4, 1}, {4, 3, 3}, 
+    {3, 5, 1}};
+    Solution obj;
+    vector<int> path = obj.shortestPath(V, E, edges);
+
+    for (int i = 0; i < path.size(); i++)
+    {
+
+        cout << path[i] << " ";
+    }
+    cout << endl;
+    return 0;
+}
+```
+**Time Complexity:** O( E log(V) ) { for Dijkstra’s Algorithm } + O(V) { for backtracking in order to find the parent for each node } Where E = Number of edges and V = Number of Nodes.  
+
+**Space Complexity:** O( |E| + |V| ) { for priority queue and dist array } + O( |V| ) { for storing the final path } Where E = Number of edges and V = Number of Nodes.  
+
+# Shortest Distance in a Binary Maze 
+Given an n * m matrix grid where each element can either be 0 or 1. You need to find the shortest distance between a given source cell to a destination cell. The path can only be created out of a cell if its value is 1.   
+
+If the path is not possible between the source cell and the destination cell, then return -1.  
+ 
+Note: You can move into an adjacent cell if that adjacent cell is filled with element 1. Two cells are adjacent if they share a side. In other words, you can move in one of four directions, Up, Down, Left, and Right.  
+
+**heads up**  
+We can see clearly in the above illustration that the distances are increasing monotonically (because of constant edge weights). Since greater distance comes at the top automatically, so we do not need the priority queue as the pop operation will always pop the smaller distance which is at the front of the queue. This helps us to eliminate an additional log(N) of time needed to perform insertion-deletion operations in a priority queue.  
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution
+{
+public:
+    int shortestPath(vector<vector<int>> &grid, pair<int, int> source,
+                     pair<int, int> destination)
+    {
+        // Edge Case: if the source is only the destination.
+        if (source.first == destination.first &&
+            source.second == destination.second)
+            return 0;
+
+        // Create a queue for storing cells with their distances from source
+        // in the form {dist,{cell coordinates pair}}.
+        queue<pair<int, pair<int, int>>> q;
+        int n = grid.size();
+        int m = grid[0].size();
+
+        // Create a distance matrix with initially all the cells marked as
+        // unvisited and the source cell as 0.
+        vector<vector<int>> dist(n, vector<int>(m, 1e9));
+        dist[source.first][source.second] = 0;
+        q.push({0, {source.first, source.second}});
+
+        // The following delta rows and delts columns array are created such that
+        // each index represents each adjacent node that a cell may have 
+        // in a direction.
+        int dr[] = {-1, 0, 1, 0};
+        int dc[] = {0, 1, 0, -1};
+
+        // Iterate through the maze by popping the elements out of the queue
+        // and pushing whenever a shorter distance to a cell is found.
+        while (!q.empty())
+        {
+            auto it = q.front();
+            q.pop();
+            int dis = it.first;
+            int r = it.second.first;
+            int c = it.second.second;
+
+            // Through this loop, we check the 4 direction adjacent nodes
+            // for a shorter path to destination.
+            for (int i = 0; i < 4; i++)
+            {
+                int newr = r + dr[i];
+                int newc = c + dc[i];
+
+                // Checking the validity of the cell and updating if dist is shorter.
+                if (newr >= 0 && newr < n && newc >= 0 && newc < m && grid[newr][newc] 
+                == 1 && dis + 1 < dist[newr][newc])
+                {
+                    dist[newr][newc] = 1 + dis;
+
+                    // Return the distance until the point when
+                    // we encounter the destination cell.
+                    if (newr == destination.first &&
+                        newc == destination.second)
+                        return dis + 1;
+                    q.push({1 + dis, {newr, newc}});
+                }
+            }
+        }
+        // If no path is found from source to destination.
+        return -1;
+    }
+};
+
+int main()
+{
+    // Driver Code.
+
+    pair<int, int> source, destination;
+    source.first = 0;
+    source.second = 1;
+    destination.first = 2;
+    destination.second = 2;
+
+    vector<vector<int>> grid = {{1, 1, 1, 1},
+                                {1, 1, 0, 1},
+                                {1, 1, 1, 1},
+                                {1, 1, 0, 0},
+                                {1, 0, 0, 1}};
+
+    Solution obj;
+
+    int res = obj.shortestPath(grid, source, destination);
+
+    cout << res;
+    cout << endl;
+
+    return 0;
+}
+```
+
+# Path with minimum effort
+You are a hiker preparing for an upcoming hike. You are given heights, a 2D array of size rows x columns, where heights[row][col] represents the height of the cell (row, col). You are situated in the top-left cell, (0, 0), and you hope to travel to the bottom-right cell, (rows-1, columns-1) (i.e.,0-indexed). You can move up, down, left, or right, and you wish to find a route that requires the minimum effort.  
+
+A route's effort is the maximum absolute difference in heights between two consecutive cells of the route. 
+
+**heads up**  
+In this problem, we need to minimize the effort of moving from the source cell (0,0) to the destination cell (n - 1,m - 1). The effort can be calculated as the maximum value of the difference between the node and its next node in the path from the source to the destination. Among all the possible paths, we have to minimize this effort. So, for these types of minimum path problems, there’s one standard algorithm that always comes to our mind and that is Dijkstra’s Algorithm which would be used in solving this problem also. We update the distance every time we encounter a value of difference less than the previous value. This way, whenever we reach the destination we finally return the value of difference which is also the minimum effort.  
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution
+{
+public:
+    int MinimumEffort(vector<vector<int>> &heights)
+    {
+
+        // Create a priority queue containing pairs of cells 
+        // and their respective distance from the source cell in the 
+        // form {diff, {row of cell, col of cell}}.
+        priority_queue<pair<int, pair<int, int>>,
+                       vector<pair<int, pair<int, int>>>,
+                       greater<pair<int, pair<int, int>>>>
+            pq;
+
+        int n = heights.size();
+        int m = heights[0].size();
+
+        // Create a distance matrix with initially all the cells marked as
+        // unvisited and the dist for source cell (0,0) as 0.
+        vector<vector<int>> dist(n, vector<int>(m, 1e9));
+        dist[0][0] = 0;
+        pq.push({0, {0, 0}});
+
+        // The following delta rows and delts columns array are created such that
+        // each index represents each adjacent node that a cell may have 
+        // in a direction.
+        int dr[] = {-1, 0, 1, 0};
+        int dc[] = {0, 1, 0, -1};
+
+        // Iterate through the matrix by popping the elements out of the queue
+        // and pushing whenever a shorter distance to a cell is found.
+        while (!pq.empty())
+        {
+            auto it = pq.top();
+            pq.pop();
+            int diff = it.first;
+            int row = it.second.first;
+            int col = it.second.second;
+
+            // Check if we have reached the destination cell,
+            // return the current value of difference (which will be min).
+            if (row == n - 1 && col == m - 1)
+                return diff;
+           
+            for (int i = 0; i < 4; i++)
+            {
+                // row - 1, col
+                // row, col + 1
+                // row - 1, col
+                // row, col - 1
+                int newr = row + dr[i];
+                int newc = col + dc[i];
+
+                // Checking validity of the cell.
+                if (newr >= 0 && newc >= 0 && newr < n && newc < m)
+                {
+                    // Effort can be calculated as the max value of differences 
+                    // between the heights of the node and its adjacent nodes.
+                    int newEffort = max(abs(heights[row][col] - heights[newr][newc]), diff);
+
+                    // If the calculated effort is less than the prev value
+                    // we update as we need the min effort.
+                    if (newEffort < dist[newr][newc])
+                    {
+                        dist[newr][newc] = newEffort;
+                        pq.push({newEffort, {newr, newc}});
+                    }
+                }
+            }
+        }
+        return 0; // if unreachable
+    }
+};
+
+int main()
+{
+    // Driver Code.
+
+    vector<vector<int>> heights = {{1, 2, 2}, {3, 8, 2}, {5, 3, 5}};
+
+    Solution obj;
+
+    int ans = obj.MinimumEffort(heights);
+
+    cout << ans;
+    cout << endl;
+
+    return 0;
+}
+```
+
+# Cheapest flights within k stops  
+There are n cities and m edges connected by some number of flights. You are given an array of flights where flights[i] = [ fromi, toi, pricei] indicates that there is a flight from city fromi to city toi with cost price. You have also given three integers src, dst, and k, and return the cheapest price from src to dst with at most k stops. If there is no such route, return -1.  
+
+**Approach**  
+- Start by creating an adjacency list, a queue that stores the distance-node and stops pairs in the form {stops,{node,dist}} and a dist array with each node initialized with a very large number ( to indicate that they’re unvisited initially) and the source node marked as ‘0’.
+- We push the source cell to the queue along with its distance which is also 0 and the stops are marked as ‘0’ initially because we’ve just started.
+- Pop the element at the front of the queue and look out for its adjacent nodes. 
+- If the current dist value of a node is better than the previous distance indicated by the distance array and the number of stops until now is less than K, we update the distance in the array and push it to the queue. Also, increase the stop count by 1.
+- We repeat the above three steps until the queue becomes empty. Note that we do not stop the algorithm from just reaching the destination node as it may give incorrect results.
+- Return the calculated distance/cost after we reach the required number of stops. If the queue becomes empty and we don’t encounter the destination node, return ‘-1’ indicating there’s no path from source to destination.
+
+WE Dont need minimum distance here, yet we need minimum steps so pq is not needed. queue is enough : ) better time complexity
+
+```CPP
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution
+{
+public:
+    int CheapestFLight(int n, vector<vector<int>> &flights,
+                       int src, int dst, int K)
+    {
+        // Create the adjacency list to depict airports and flights in
+        // the form of a graph.
+        vector<pair<int, int>> adj[n];
+        for (auto it : flights)
+        {
+            adj[it[0]].push_back({it[1], it[2]});
+        }
+
+        // Create a queue which stores the node and their distances from the
+        // source in the form of {stops, {node, dist}} with ‘stops’ indicating 
+        // the no. of nodes between src and current node.
+        queue<pair<int, pair<int, int>>> q;
+        
+        q.push({0, {src, 0}});
+
+        // Distance array to store the updated distances from the source.
+        vector<int> dist(n, 1e9);
+        dist[src] = 0;
+
+        // Iterate through the graph using a queue like in Dijkstra with 
+        // popping out the element with min stops first.
+        while (!q.empty())
+        {
+            auto it = q.front();
+            q.pop();
+            int stops = it.first;
+            int node = it.second.first;
+            int cost = it.second.second;
+
+            // We stop the process as soon as the limit for the stops reaches.
+            if (stops > K)
+                continue;
+            for (auto iter : adj[node])
+            {
+                int adjNode = iter.first;
+                int edW = iter.second;
+
+                // We only update the queue if the new calculated dist is
+                // less than the prev and the stops are also within limits.
+                if (cost + edW < dist[adjNode] && stops <= K)
+                {
+                    dist[adjNode] = cost + edW;
+                    q.push({stops + 1, {adjNode, cost + edW}});
+                }
+            }
+        }
+        // If the destination node is unreachable return ‘-1’
+        // else return the calculated dist from src to dst.
+        if (dist[dst] == 1e9)
+            return -1;
+        return dist[dst];
+    }
+};
+
+int main()
+{
+    // Driver Code.
+    int n = 4, src = 0, dst = 3, K = 1;
+
+    vector<vector<int>> flights = {{0, 1, 100}, {1, 2, 100}, {2, 0, 100}, {1, 3, 600},
+    {2, 3, 200}};
+
+    Solution obj;
+
+    int ans = obj.CheapestFLight(n, flights, src, dst, K);
+
+    cout << ans;
+    cout << endl;
+
+    return 0;
+}
+```
+
+**Time Complexity:** O( N ) { Additional log(N) of time eliminated here because we’re using a simple queue rather than a priority queue which is usually used in Dijkstra’s Algorithm }.  
+
+Where N = Number of flights / Number of edges.  
+
+**Space Complexity:**  O( |E| + |V| ) { for the adjacency list, priority queue, and the dist array }.  
+
+Where E = Number of edges (flights.size()) and V = Number of Airports.  
+
+# Minimum multiplications to reach end  
+Given start, end, and an array arr of n numbers. At each step, the start is multiplied by any number in the array and then a mod operation with 100000 is done to get the new start.  
+Your task is to find the minimum steps in which the end can be achieved starting from the start. If it is not possible to reach the end, then return -1.  
+
+![image](https://github.com/user-attachments/assets/90500d09-5bd9-48a0-b422-7d50fab69bcb)
+```CPP
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution
+{
+public:
+    int minimumMultiplications(vector<int> &arr,
+                               int start, int end)
+    {
+        // Create a queue for storing the numbers as a result of multiplication
+        // of the numbers in the array and the start number.
+        queue<pair<int, int>> q;
+        q.push({start, 0});
+
+        // Create a dist array to store the no. of multiplications to reach
+        // a particular number from the start number.
+        vector<int> dist(100000, 1e9);
+        dist[start] = 0;
+        int mod = 100000;
+
+        // Multiply the start no. with each of numbers in the arr
+        // until we get the end no.
+        while (!q.empty())
+        {
+            int node = q.front().first;
+            int steps = q.front().second;
+            q.pop();
+
+            for (auto it : arr)
+            {
+                int num = (it * node) % mod;
+
+                // If the no. of multiplications are less than before
+                // in order to reach a number, we update the dist array.
+                if (steps + 1 < dist[num])
+                {
+                    dist[num] = steps + 1;
+
+                    // Whenever we reach the end number
+                    // return the calculated steps
+                    if (num == end)
+                        return steps + 1;
+                    q.push({num, steps + 1});
+                }
+            }
+        }
+        // If the end no. is unattainable.
+        return -1;
+    }
+};
+
+int main()
+{
+    // Driver Code.
+    int start = 3, end = 30;
+
+    vector<int> arr = {2, 5, 7};
+
+    Solution obj;
+
+    int ans = obj.minimumMultiplications(arr, start, end);
+
+    cout << ans;
+    cout << endl;
+
+    return 0;
+}
+```
+Time Complexity : O(100000 * N)   
+
+Where ‘100000’ are the total possible numbers generated by multiplication (hypothetical) and N = size of the array with numbers of which each node could be multiplied.  
+
+Space Complexity :  O(100000 * N)   
+
+Where ‘100000’ are the total possible numbers generated by multiplication (hypothetical) and N = size of the array with numbers of which each node could be multiplied. 100000 * N is the max possible queue size. The space complexity of the dist array is constant.  
+
+# No of ways to arrive at destination  
+You are in a city that consists of n intersections numbered from 0 to n - 1 with bi-directional roads between some intersections. The inputs are generated such that you can reach any intersection from any other intersection and that there is at most one road between any two intersections.  
+
+You are given an integer n and a 2D integer array ‘roads’ where roads[i] = [ui, vi, timei] means that there is a road between intersections ui and vi that takes timei minutes to travel. You want to know in how many ways you can travel from intersection 0 to intersection n - 1 in the shortest amount of time.  
+
+Return the number of ways you can arrive at your destination in the shortest amount of time. Since the answer may be large, return it modulo 109 + 7.  
+![image](https://github.com/user-attachments/assets/ec5321d6-51f7-44bb-a0d3-23234219d66a)
+
+
+**Approach**  
+- Start by creating an adjacency list, a priority queue that stores the dist-node pairs in the form {dist, node} and a dist array with each node initialized with a very large number ( to indicate that the nodes have not been visited initially). 
+- In addition to the standard configuration of Dijkstra’s algorithm, we have one more array in this problem by the name ‘ways’ which is initialized to ‘0’ for every node when they’re unvisited (so the number of ways is 0).
+- Now, we push the start node to the queue along with its distance marked as ‘0’ and ways marked as ‘1’ initially because we’ve just started the algorithm.
+- Pop the element from the front of the queue and look out for its adjacent nodes.
+- If the current dist value for a number is better than the previous distance indicated by the distance array, we update the distance in the array and push it to the queue. Now, here side by side we also keep the number of ways to the ‘node’ the same as before.
+- If the current dist value is the same as the previously stored dist value at the same index, increment the number of ways by 1 at that index.
+- We repeat the above steps until the queue becomes empty or till we reach the destination.
+- Return the ways[n-1] modulo 10^9+7 when the queue becomes empty.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution
+{
+public:
+    int countPaths(int n, vector<vector<int>> &roads)
+    {
+        // Creating an adjacency list for the given graph.
+        vector<pair<int, int>> adj[n];
+        for (auto it : roads)
+        {
+            adj[it[0]].push_back({it[1], it[2]});
+            adj[it[1]].push_back({it[0], it[2]});
+        }
+
+        // Defining a priority queue (min heap). 
+        priority_queue<pair<int, int>,
+                       vector<pair<int, int>>, greater<pair<int, int>>> pq;
+
+        // Initializing the dist array and the ways array
+        // along with their first indices.
+        vector<int> dist(n, INT_MAX), ways(n, 0);
+        dist[0] = 0;
+        ways[0] = 1;
+        pq.push({0, 0});
+
+        // Define modulo value
+        int mod = (int)(1e9 + 7);
+
+        // Iterate through the graph with the help of priority queue
+        // just as we do in Dijkstra's Algorithm.
+        while (!pq.empty())
+        {
+            int dis = pq.top().first;
+            int node = pq.top().second;
+            pq.pop();
+
+            for (auto it : adj[node])
+            {
+                int adjNode = it.first;
+                int edW = it.second;
+
+                // This ‘if’ condition signifies that this is the first
+                // time we’re coming with this short distance, so we push
+                // in PQ and keep the no. of ways the same.
+                if (dis + edW < dist[adjNode])
+                {
+                    dist[adjNode] = dis + edW;
+                    pq.push({dis + edW, adjNode});
+                    ways[adjNode] = ways[node];
+                }
+
+                // If we again encounter a node with the same short distance
+                // as before, we simply increment the no. of ways.
+                else if (dis + edW == dist[adjNode])
+                {
+                    ways[adjNode] = (ways[adjNode] + ways[node]) % mod;
+                }
+            }
+        }
+        // Finally, we return the no. of ways to reach
+        // (n-1)th node modulo 10^9+7.
+        return ways[n - 1] % mod;
+    }
+};
+
+int main()
+{
+    // Driver Code.
+    int n = 7;
+
+    vector<vector<int>> edges = {{0, 6, 7}, {0, 1, 2}, {1, 2, 3}, {1, 3, 3}, {6, 3, 3}, 
+    {3, 5, 1}, {6, 5, 1}, {2, 5, 1}, {0, 4, 5}, {4, 6, 2}};
+
+    Solution obj;
+
+    int ans = obj.countPaths(n, edges);
+
+    cout << ans;
+    cout << endl;
+
+    return 0;
+}
+```
+
+Time Complexity: O( E* log(V)) { As we are using simple Dijkstra's algorithm here, the time complexity will be or the order E*log(V)}  
+
+Where E = Number of edges and V = No. of vertices.  
+
+Space Complexity :  O(N) { for dist array + ways array + approximate complexity for priority queue }  
+
+Where, N = Number of nodes.  
+
+# Find the City With the Smallest Number of Neighbours at a Threshold Distance
+
+There are n cities numbered from 0 to n-1. Given the array edges where edges[i] = [fromi, toi,weighti]  represents a bidirectional and weighted edge between cities fromi and toi, and given the integer distance Threshold. You need to find out a city with the smallest number of cities that are reachable through some path and whose distance is at most Threshold Distance, If there are multiple such cities, our answer will be the city with the greatest number.  
+
+Note: that the distance of a path, connecting cities i and j are equal to the sum of the edges' weights along that path.  
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+	int findCity(int n, int m, vector<vector<int>>& edges,
+	             int distanceThreshold) {
+		vector<vector<int>> dist(n, vector<int> (n, INT_MAX));
+		for (auto it : edges) {
+			dist[it[0]][it[1]] = it[2];
+			dist[it[1]][it[0]] = it[2];
+		}
+		for (int i = 0; i < n; i++) dist[i][i] = 0;
+		for (int k = 0; k < n; k++) {
+			for (int i = 0; i < n; i++) {
+				for (int j = 0; j < n; j++) {
+					if (dist[i][k] == INT_MAX || dist[k][j] == INT_MAX)
+						continue;
+					dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
+				}
+			}
+		}
+
+		int cntCity = n;
+		int cityNo = -1;
+		for (int city = 0; city < n; city++) {
+			int cnt = 0;
+			for (int adjCity = 0; adjCity < n; adjCity++) {
+				if (dist[city][adjCity] <= distanceThreshold)
+					cnt++;
+			}
+
+			if (cnt <= cntCity) {
+				cntCity = cnt;
+				cityNo = city;
+			}
+		}
+		return cityNo;
+
+	}
+};
+
+
+int main() {
+
+	int n = 4;
+	int m = 4;
+	vector<vector<int>> edges = {{0, 1, 3}, {1, 2, 1}, {1, 3, 4}, {2, 3, 1}};
+	int distanceThreshold = 4;
+
+	Solution obj;
+	int cityNo = obj.findCity(n, m, edges, distanceThreshold);
+	cout << "The answer is node: " << cityNo << endl;
+
+	return 0;
+}
+```
+
+Time Complexity: O(V3), as we have three nested loops each running for V times, where V = no. of vertices.  
+
+Space Complexity: O(V2), where V = no. of vertices. This space complexity is due to storing the adjacency matrix of the given graph.  
 
 # Bridges
 
