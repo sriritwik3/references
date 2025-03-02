@@ -2,8 +2,8 @@
 
 ## **Introduction**
 
-The **Strategy Pattern** is a **behavioral design pattern** that enables selecting an algorithm's behavior at runtime. It defines a family of algorithms, encapsulates them, and makes them interchangeable without modifying client code.
-mostly used when lets say some of the children share same kind of beahviour which is different from their parent. so we extract the behaviour which can be shared and create a strategy which can be reused  
+The **Strategy Pattern** is a **behavioral design pattern** that enables selecting an algorithm's behavior at runtime. It defines a family of algorithms, encapsulates them, and makes them interchangeable without modifying client code.  
+The Strategy Pattern is used when multiple objects require different variations of a behavior. Instead of implementing these behaviors in subclasses (which can lead to code duplication and rigid inheritance), we extract the behavior into separate strategy classes and make them interchangeable at runtime.
 ### **Key Features**
 
 ✅ Allows runtime selection of algorithms.  
